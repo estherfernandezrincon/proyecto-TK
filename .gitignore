@@ -1,2 +1,4 @@
 venv
 imagenes/
+config
+__pycache__

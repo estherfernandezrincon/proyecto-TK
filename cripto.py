@@ -14,11 +14,10 @@ root.iconbitmap("imagenes/bolsa.ico")
 # -------------parte superior PARRILLA y boton + -------------------
 
 frame_five = Frame(root)
-parrilla = Frame(frame_five)
-parrilla.pack(side= TOP)
 frame_five.pack(side=TOP)
 
-labelFecha = Label(text= "Fecha", width=7)
+
+labelFecha = Label( text= "Fecha", width=7)
 labelFecha.place(x= 60, y=0)
 
 labelHora = Label(text= "Hora", width=7)
@@ -92,15 +91,15 @@ entryPU.place(x=420, y=50)
 
 
 # ---------------parte central entrada FROM y Q--------------
-
-frame_one = Frame(root)
+fCenter= Frame(root)
+frame_one = Frame(fCenter)
 FromCurrency = Frame(frame_one)
 From = Frame(FromCurrency)
 
 label_FromCurrency = Label(FromCurrency, text= 'From:', width=5)
 label_FromCurrency.pack(side= LEFT, fill= X,  padx= 10, pady= 10)
 
-FromMoneda= StringVar()
+
 combo= ttk.Combobox(FromCurrency,  values=("EUR"))
 combo.pack(side=LEFT)
 FromCurrency.pack(side=TOP)
@@ -121,7 +120,9 @@ frame_one.pack(side= LEFT, padx= 65, fill= X)
 
 
 # ---------------parte central entrada  TO, Q , PU -------------------
-frame_two = Frame(root)
+fCenter= Frame( root)
+frame_two = Frame(fCenter)
+
 ToCurrency = Frame(frame_two)
 To= Frame(ToCurrency)
 label_ToCurrency = Label(ToCurrency, text= 'To:', width= 5)
@@ -154,37 +155,36 @@ frame_two.pack(side= LEFT, fill= X)
 #PU.config(bg="black")
 
 #---------------parte central botones ACEPTAR, CANCELAR, OK-----------
-
-frame_three = Frame(root)
+fCenter = Frame(root)
+frame_three = Frame(fCenter)
 Teclas = Frame(frame_three)
 Teclas.pack(side= BOTTOM)
 frame_three.pack(side=LEFT, fill= X)
-frame_three.pack_propagate(FALSE)
-#frame_three.config(bg="black")
 
-def Botones():
-    FromMoneda.set("moneda seleccionada")
 
-buttonA = Button( text='Aceptar', command= Botones)
+
+
+buttonA = Button( text='Aceptar')
 buttonA.place(x= 603 , y= 140)
-buttonC = Button( text='Cancelar',command= Botones)
+buttonC = Button( text='Cancelar')
 buttonC.place(x= 600 , y=170)
-buttonOk = Button( text='ok',command= Botones)
+buttonOk = Button( text='ok')
 buttonOk.place(x= 615 , y=205)
 
 labelNTransaccion = Label(text= "---------Nueva Transaccion------------------------------------------------")
 labelNTransaccion.place(x= 60, y= 90)
 
 
-
+fCenter.pack(side=TOP)
 
 
 #----------parte inferior € INVERTIDOS, VALOR ACTUAL, CALCULAR-------------------
 
 frame_four = Frame(root)
+frame_four.pack(side=BOTTOM)
 Resumen= Frame(frame_four)
-Resumen.pack(side=BOTTOM, padx= 10, pady= 5, ipadx= 15)
-#Resumen.config(bg="blue")
+Resumen.pack(side=TOP, padx= 10, pady= 5, ipadx= 15)
+
 
 
 
@@ -192,27 +192,25 @@ label_Resumen= Label(Resumen, text="€ invertidos:", width= 10, relief= GROOVE)
 label_Resumen.pack(side= LEFT, fill= BOTH, expand= True, padx= 5, pady= 5)
 text = Entry(Resumen, width= 15)
 text.pack(side=LEFT, padx=5, pady=5)
-frame_four.pack(side=BOTTOM)
+
 
 
 label_Resumen= Label(Resumen, text=" Valor actual", width= 10)
 label_Resumen.pack(side=LEFT,fill= BOTH, expand= True, padx= 5, pady= 5)
 text= Entry(Resumen, width= 15)
 text.pack(side= LEFT, padx= 5, pady=5)
-frame_four.pack(side=BOTTOM)
 
 
-def CalcularInversion():
-    pass
 
-botonCalcular = Button(Resumen,text="Calcular", command=CalcularInversion, relief= GROOVE)
+
+botonCalcular = Button(Resumen,text="Calcular", relief= GROOVE)
 botonCalcular.pack(side= LEFT)
 #botonCalcular.place(x= 920, y= 320)
-frame_four.pack(side= BOTTOM)
+
 
 separar=ttk.Separator(frame_four, orient=HORIZONTAL)
 separar.pack(side=TOP, fill=BOTH, expand=True, padx=5, pady=5)
 
-
+frame_four.pack(side=TOP)
 
 root.mainloop()
