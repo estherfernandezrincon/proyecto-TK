@@ -4,10 +4,11 @@ from tkinter import ttk
 
 
 root = Tk()
-root.geometry("1000x400")
+root.geometry("700x400")
 root.title("MY CRIPTO")
 root.config( bd= 15, relief="groove")
 root.iconbitmap("imagenes/bolsa.ico")
+root.resizable(0,0)
 
 
 
@@ -93,18 +94,21 @@ entryPU.place(x=420, y=50)
 # ---------------parte central entrada FROM y Q--------------
 fCenter= Frame(root)
 frame_one = Frame(fCenter)
+frame_one.pack(side=LEFT)
+
 FromCurrency = Frame(frame_one)
 From = Frame(FromCurrency)
+
+fCenter.pack(side=TOP)
 
 label_FromCurrency = Label(FromCurrency, text= 'From:', width=5)
 label_FromCurrency.pack(side= LEFT, fill= X,  padx= 10, pady= 10)
 
-
 combo= ttk.Combobox(FromCurrency,  values=("EUR"))
 combo.pack(side=LEFT)
 FromCurrency.pack(side=TOP)
-frame_one.pack(side=LEFT, fill= X)
-#FromCurrency.config(bg="pink")
+
+
 
 
 
@@ -115,35 +119,38 @@ label_QCurrency.pack(side=LEFT, fill= X,  padx=10, pady=10)
 textQ = Entry (QCurrency, width= 23)
 textQ.pack(side=LEFT, fill= X,  padx=10, pady=10)
 QCurrency.pack(side=TOP)
-frame_one.pack(side= LEFT, padx= 65, fill= X)
-#QCurrency.config(bg="blue")
+
+
 
 
 # ---------------parte central entrada  TO, Q , PU -------------------
 fCenter= Frame( root)
 frame_two = Frame(fCenter)
+frame_two.pack(side=LEFT)
+
 
 ToCurrency = Frame(frame_two)
 To= Frame(ToCurrency)
 label_ToCurrency = Label(ToCurrency, text= 'To:', width= 5)
 label_ToCurrency.pack(side= LEFT, fill= BOTH, expand= True)
+fCenter.pack(side=TOP)
 
 combo= ttk.Combobox(ToCurrency,  values=("EUR","BTC", "ETH", "XRP", "LTC", "BCH", "BNB", "USDT", "EOS", "BSV", "XLM", "ADA", "TRX"))
 combo.pack(side=LEFT)
 ToCurrency.pack(side=TOP)
-frame_two.pack(side=RIGHT, fill= X)
-#ToCurrency.config(bg="yellow")
+
 
 QCurrency = Frame(frame_two)
 Q= Frame(QCurrency)
 label_QCurrency = Label(QCurrency, text= 'Q:', width= 5)
 label_QCurrency.pack(side=LEFT, fill= BOTH, expand= True)
 
+
 textQ = Entry (QCurrency, width= 23)
 textQ.pack(side=LEFT, fill= BOTH, expand= FALSE, padx= 10, pady= 10)
 QCurrency.pack(side=TOP)
-frame_two.pack(side= LEFT, fill= X)
-#QCurrency.config(bg="green")
+
+
 
 PU = Frame(frame_two)
 label_PU = Label(PU, text= 'P.U.:', width= 5)
@@ -151,16 +158,16 @@ label_PU.pack(side=LEFT, fill= BOTH, expand= FALSE)
 textPU = Entry (PU, width = 23)
 textPU.pack(side=LEFT, fill= BOTH, expand= TRUE, padx= 10, pady= 10)
 PU.pack(side=TOP)
-frame_two.pack(side= LEFT, fill= X)
-#PU.config(bg="black")
+
+
 
 #---------------parte central botones ACEPTAR, CANCELAR, OK-----------
 fCenter = Frame(root)
 frame_three = Frame(fCenter)
 Teclas = Frame(frame_three)
 Teclas.pack(side= BOTTOM)
-frame_three.pack(side=LEFT, fill= X)
 
+#fCenter.pack(side=TOP)
 
 
 
@@ -168,34 +175,36 @@ buttonA = Button( text='Aceptar')
 buttonA.place(x= 603 , y= 140)
 buttonC = Button( text='Cancelar')
 buttonC.place(x= 600 , y=170)
-buttonOk = Button( text='ok')
-buttonOk.place(x= 615 , y=205)
+buttonOk = Button( text='Consulta Api')
+buttonOk.place(x= 590 , y=205)
+
+
 
 labelNTransaccion = Label(text= "---------Nueva Transaccion------------------------------------------------")
 labelNTransaccion.place(x= 60, y= 90)
 
 
-fCenter.pack(side=TOP)
+
 
 
 #----------parte inferior € INVERTIDOS, VALOR ACTUAL, CALCULAR-------------------
 
 frame_four = Frame(root)
-frame_four.pack(side=BOTTOM)
+frame_four.pack(side=TOP)
 Resumen= Frame(frame_four)
-Resumen.pack(side=TOP, padx= 10, pady= 5, ipadx= 15)
+Resumen.pack(side=BOTTOM, padx= 10, pady= 5, ipadx= 15)
 
 
 
 
-label_Resumen= Label(Resumen, text="€ invertidos:", width= 10, relief= GROOVE)
+label_Resumen= Label(Resumen, text="€ invertidos:", width= 10)
 label_Resumen.pack(side= LEFT, fill= BOTH, expand= True, padx= 5, pady= 5)
 text = Entry(Resumen, width= 15)
 text.pack(side=LEFT, padx=5, pady=5)
 
 
 
-label_Resumen= Label(Resumen, text=" Valor actual", width= 10)
+label_Resumen= Label(Resumen, text=" Valor actual", width= 10 )
 label_Resumen.pack(side=LEFT,fill= BOTH, expand= True, padx= 5, pady= 5)
 text= Entry(Resumen, width= 15)
 text.pack(side= LEFT, padx= 5, pady=5)
@@ -205,12 +214,12 @@ text.pack(side= LEFT, padx= 5, pady=5)
 
 botonCalcular = Button(Resumen,text="Calcular", relief= GROOVE)
 botonCalcular.pack(side= LEFT)
-#botonCalcular.place(x= 920, y= 320)
+
 
 
 separar=ttk.Separator(frame_four, orient=HORIZONTAL)
 separar.pack(side=TOP, fill=BOTH, expand=True, padx=5, pady=5)
 
-frame_four.pack(side=TOP)
+frame_four.pack(side=BOTTOM)
 
 root.mainloop()
