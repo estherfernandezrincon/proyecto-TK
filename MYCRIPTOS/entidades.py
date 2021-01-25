@@ -2,6 +2,8 @@ from tkinter import *
 from tkinter import ttk
 
 
+import requests
+
 
 
 
@@ -35,6 +37,7 @@ class Movimientos(ttk.Frame):
         pass
 
 
+
 class Compras(ttk.Frame):
     def __init__(self, parent):
         ttk.Frame.__init__(self, parent)
@@ -46,16 +49,19 @@ class Compras(ttk.Frame):
         Q=ttk.Frame(FROM)
         Q.pack(side=BOTTOM, pady= 5)
         
-        self.lblFrom = ttk.Label(FROM, text="From: ", width=5)
+        self.CurrencyFrom= StringVar()
+        self.lblFrom = ttk.Label(FROM, text="From: ",  width=5)
         self.lblFrom.pack(side= LEFT, fill= X, padx= 5, pady= 10)   
-        self.comboFrom = ttk.Combobox(FROM, values=("EUR"))
+        self.comboFrom = ttk.Combobox(FROM, values=("EUR"),textvariable= self.CurrencyFrom)
+        #self.combobox.state(['!disabled','readonly'])
         self.comboFrom.pack(side= LEFT)
 
         self.labelQ = ttk.Label(Q, text="Q:" ,width= 4)
         self.labelQ.pack(side= LEFT, fill= X,  padx= 5, pady= 10)
-        self.Q=DoubleVar()
-        self.entryQ = ttk.Entry(Q, textvariable=self.Q, width=23)
-        self.entryQ.pack(side=LEFT, fill= X,  padx=5, pady=10)
+        self.QFrom= DoubleVar()
+        self.entryQFrom = ttk.Entry(Q, textvariable=self.QFrom, width=23)
+        self.entryQFrom.pack(side=LEFT, fill= X,  padx=5, pady=10)
+        
 
         compras =ttk.Frame(self)
         compras.pack(side=LEFT)
@@ -66,16 +72,19 @@ class Compras(ttk.Frame):
         PU = ttk.Frame(Q)
         PU.pack(side=BOTTOM, pady= 5)
         
+        self.CurrencyTo= StringVar()
         self.labelTo = ttk.Label(TO,  text="TO : ", width=7)
         self.labelTo.pack(side= LEFT,  padx= 10, pady= 10)
-        self.comboTo = ttk.Combobox(TO, values=("EUR","BTC", "ETH", "XRP", "LTC", "BCH", "BNB", "USDT", "EOS", "BSV", "XLM", "ADA", "TRX"))
+        self.comboTo = ttk.Combobox(TO, values=("EUR","BTC", "ETH", "XRP", "LTC", "BCH", "BNB", "USDT", "EOS", "BSV", "XLM", "ADA", "TRX"),
+        textvariable= self.CurrencyTo )
+        #self.combo.state(['!disabled','readonly'])
         self.comboTo.pack(side= LEFT)
 
         self.labelQ = ttk.Label(Q, text="Q:" ,width= 5)
         self.labelQ.pack(side= LEFT,   padx= 10, pady= 10)
-        self.Q=DoubleVar()
-        self.entryQ = ttk.Entry(Q, textvariable=self.Q, width=23)
-        self.entryQ.pack(side=LEFT,  padx=10, pady=10)
+        self.QTo=DoubleVar()
+        self.entryQTo = ttk.Entry(Q, textvariable=self.QTo, width=23)
+        self.entryQTo.pack(side=LEFT,  padx=10, pady=10)
 
         self.labelPU = ttk.Label(PU, text="P.U. : ", width=5)
         self.labelPU.pack(side= LEFT,   padx= 10, pady= 10)
@@ -90,11 +99,34 @@ class Compras(ttk.Frame):
         
         ttk.Button(v4,text="Aceptar").pack(side= TOP , pady=5)
         ttk.Button(v4,text="Cancelar").pack(side= TOP,pady= 5)
-        ttk.Button(v4,text="Consulta Api").pack(side= TOP , pady=5)
+        ttk.Button(v4,text="Consulta Api", command= self.peticion).pack(side= TOP , pady=5)
+
+    def peticion(self):
+        
+        CurrencyFrom = self.CurrencyFrom.get() 
+        Qf = float(self.QFrom.get())
+        CurrencyTo = self.CurrencyTo.get()
+        url_template = "https://pro-api.coinmarketcap.com/v1/tools/price-conversion?amount={}&symbol={}&convert={}&CMC_PRO_API_KEY=7cbc308d-5a35-45c2-bfe2-c8da53d30f41".format(Qf, CurrencyFrom, CurrencyTo)
+        respuesta = requests.get(url_template)
+
+        if respuesta.status_code == 200:      
+            datos = respuesta.json()   
+            CurrencyPurchase = datos["data"]["quote"][CurrencyTo]["price"]
+            self.QTo.set(CurrencyPurchase)
+            if datos["data"]["quote"][CurrencyTo]["price"] <= 0 :
+                print ("cripto elegida tiene importe inferior a cero")
+
+            elif  datos["data"]["quote"][CurrencyTo]["price"] > 0 :
+                respuesta = url_template.format( Qf, CurrencyFrom, CurrencyTo)    
+        else:
+            print("Error de consulta: {}".format(respuesta.status_code))
         
 
 
+
+
 class Resumen(ttk.Frame):
+
     def __init__(self, parent):
         ttk.Frame.__init__(self, parent)
 
@@ -126,4 +158,6 @@ class Resumen(ttk.Frame):
         lblEUR= ttk.Label(saldo,text="EUR y Criptos").pack(side=TOP)
 
         
+
+
 

@@ -105,6 +105,7 @@ label_FromCurrency = Label(FromCurrency, text= 'From:', width=5)
 label_FromCurrency.pack(side= LEFT, fill= X,  padx= 10, pady= 10)
 
 combo= ttk.Combobox(FromCurrency,  values=("EUR"))
+combo.state(['!disabled','readonly'])
 combo.pack(side=LEFT)
 FromCurrency.pack(side=TOP)
 

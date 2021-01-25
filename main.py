@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import ttk
 
 from MYCRIPTOS import entidades
+
 class Cripto(Tk):
     def __init__(self):
         Tk.__init__(self)

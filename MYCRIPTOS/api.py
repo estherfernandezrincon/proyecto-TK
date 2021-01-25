@@ -1,5 +1,6 @@
 import requests
 
+from MYCRIPTO import entidades
 
 apiKey="7cbc308d-5a35-45c2-bfe2-c8da53d30f41"
 
@@ -10,26 +11,22 @@ url_template = "https://pro-api.coinmarketcap.com/v1/tools/price-conversion?amou
 class PeticionError(Exception):
     pass
 
-def peticion(url):
-    respuesta = requests.get(url)
-    if respuesta.status_code == 200:
-        datos= respuesta.json()
-        if datos["data"]["quote"][cripto]["price"] <= 0 :
-            raise PeticionError("cripto elegida tiene importe inferior a cero")
-        else:
-            return (datos)
+def peticion(self):
+        
+    CurrencyFrom = self.CurrencyFrom.get() 
+    Qf = float(self.QFrom.get())
+    CurrencyTo = self.CurrencyTo.get()
+    url_template = "https://pro-api.coinmarketcap.com/v1/tools/price-conversion?amount={}&symbol={}&convert={}&CMC_PRO_API_KEY=7cbc308d-5a35-45c2-bfe2-c8da53d30f41".format(Qf, CurrencyFrom, CurrencyTo)
+    respuesta = requests.get(url_template)
+
+    if respuesta.status_code == 200:      
+        datos = respuesta.json()   
+        CurrencyPurchase = datos["data"]["quote"][CurrencyTo]["price"]
+        self.QTo.set(CurrencyPurchase)
+        if datos["data"]["quote"][CurrencyTo]["price"] <= 0 :
+            print ("cripto elegida tiene importe inferior a cero")
+
+        elif  datos["data"]["quote"][CurrencyTo]["price"] > 0 :
+            respuesta = url_template.format( Qf, CurrencyFrom, CurrencyTo)    
     else:
-        raise PeticionError("Error de consulta: {}".format(respuesta.status_code))
-
-
-respuesta = requests.get(url_template)
-datos= respuesta.json()
-
-cantidad = input("qué cantidad quieres invertir: ")
-invertir = input("qué moneda vas a invertir: ")
-cripto= input("qué cripto quieres comprar : ")
-respuesta = peticion (url_template.format(cantidad, invertir, cripto, apiKey ))
-
-cripto_inversion = respuesta["data"]["quote"][cripto]["price"]
-print("Has invertido {}, {}, en comprar {}, y el importe es de tu compra es de {}".format(cantidad, invertir, cripto, cripto_inversion))
-
+        print("Error de consulta: {}".format(respuesta.status_code))

@@ -2,3 +2,5 @@ venv
 imagenes/
 config
 __pycache__
+.vscode
+
