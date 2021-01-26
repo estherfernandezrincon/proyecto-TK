@@ -1,8 +1,14 @@
 from tkinter import *
 from tkinter import ttk
-
-
+import sqlite3
 import requests
+
+import config
+
+from datetime import datetime
+
+#from MYCRIPTOS import api
+
 
 
 
@@ -33,6 +39,7 @@ class Movimientos(ttk.Frame):
         ttk.Label(V11,textvariable=self.Consulta, background="gray", anchor="e", width= 6).pack(side=LEFT)
         ttk.Label(V11,textvariable=self.Consulta, background="lightgray", anchor="e", width= 6).pack(side=LEFT)
         ttk.Label(V11,textvariable=self.Consulta, background="gray", anchor="e", width= 6).pack(side=LEFT)
+    
     def Consulta(self):
         pass
 
@@ -52,8 +59,7 @@ class Compras(ttk.Frame):
         self.CurrencyFrom= StringVar()
         self.lblFrom = ttk.Label(FROM, text="From: ",  width=5)
         self.lblFrom.pack(side= LEFT, fill= X, padx= 5, pady= 10)   
-        self.comboFrom = ttk.Combobox(FROM, values=("EUR"),textvariable= self.CurrencyFrom)
-        #self.combobox.state(['!disabled','readonly'])
+        self.comboFrom = ttk.Combobox(FROM, values=("EUR"),textvariable= self.CurrencyFrom, state="readonly")
         self.comboFrom.pack(side= LEFT)
 
         self.labelQ = ttk.Label(Q, text="Q:" ,width= 4)
@@ -76,8 +82,7 @@ class Compras(ttk.Frame):
         self.labelTo = ttk.Label(TO,  text="TO : ", width=7)
         self.labelTo.pack(side= LEFT,  padx= 10, pady= 10)
         self.comboTo = ttk.Combobox(TO, values=("EUR","BTC", "ETH", "XRP", "LTC", "BCH", "BNB", "USDT", "EOS", "BSV", "XLM", "ADA", "TRX"),
-        textvariable= self.CurrencyTo )
-        #self.combo.state(['!disabled','readonly'])
+        textvariable= self.CurrencyTo , state="readonly")
         self.comboTo.pack(side= LEFT)
 
         self.labelQ = ttk.Label(Q, text="Q:" ,width= 5)
@@ -97,22 +102,28 @@ class Compras(ttk.Frame):
         v4= ttk.Frame(compras)
         v4.pack(side=LEFT, padx= 120)
         
-        ttk.Button(v4,text="Aceptar").pack(side= TOP , pady=5)
+        ttk.Button(v4,text="Aceptar", command = self.Comprar).pack(side= TOP , pady=5)
         ttk.Button(v4,text="Cancelar").pack(side= TOP,pady= 5)
         ttk.Button(v4,text="Consulta Api", command= self.peticion).pack(side= TOP , pady=5)
+ 
+    
 
     def peticion(self):
         
         CurrencyFrom = self.CurrencyFrom.get() 
         Qf = float(self.QFrom.get())
         CurrencyTo = self.CurrencyTo.get()
+        
         url_template = "https://pro-api.coinmarketcap.com/v1/tools/price-conversion?amount={}&symbol={}&convert={}&CMC_PRO_API_KEY=7cbc308d-5a35-45c2-bfe2-c8da53d30f41".format(Qf, CurrencyFrom, CurrencyTo)
         respuesta = requests.get(url_template)
+
 
         if respuesta.status_code == 200:      
             datos = respuesta.json()   
             CurrencyPurchase = datos["data"]["quote"][CurrencyTo]["price"]
             self.QTo.set(CurrencyPurchase)
+            PU= float(Qf / CurrencyPurchase)
+            self.PU.set(PU)
             if datos["data"]["quote"][CurrencyTo]["price"] <= 0 :
                 print ("cripto elegida tiene importe inferior a cero")
 
@@ -121,6 +132,37 @@ class Compras(ttk.Frame):
         else:
             print("Error de consulta: {}".format(respuesta.status_code))
         
+
+ 
+
+
+
+    def Comprar(self):
+        
+        conn = sqlite3.connect(DBFILE)
+        c = conn.cursor()
+
+        now=datetime.now()
+        nowD=now.date()
+        nowT=now.time()
+
+        id =["id"]
+        print(id)
+        date= nowD
+        time = nowT
+        CurrencyFrom = self.CurrencyFrom.get() 
+        Qf = float(self.QFrom.get())
+        CurrencyTo = self.CurrencyTo.get()
+        CurrencyPurchase=self.QTo.set
+        
+
+
+        c.execute()
+
+        compra('INSERT INTO MOVEMENTS (id, Date, Time, From, From Q, To, To Q ) VALUES (?,?,?,?,?,?,?);', (id, date, time, CurrencyFrom,Qf,CurrencyTo,CurrencyPurchase))
+        conn.commit()
+
+        print(c.fetchall())
 
 
 
@@ -155,7 +197,8 @@ class Resumen(ttk.Frame):
         saldo.title("Saldo Criptos")
         saldo.grab_set()
         
-        lblEUR= ttk.Label(saldo,text="EUR y Criptos").pack(side=TOP)
+        lblEUR= ttk.Label(saldo,text="Criptos").pack(side=TOP)
+
 
         
 
