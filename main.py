@@ -18,12 +18,17 @@ class Cripto(Tk):
         
         self.compras = entidades.Compras(self)
         self.compras.pack(side=TOP)
+        #self.compras.AñadeMoneda()
+    
 
         self.resumen = entidades.Resumen(self)
         self.resumen.pack(side=TOP)
+        #self.resumen.CalcularSaldo()
+    
 
 
 
 if __name__ == "__main__":
     app = Cripto()
     app.mainloop()
+

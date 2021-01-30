@@ -1,13 +1,13 @@
 from tkinter import *
 from tkinter import ttk
 import sqlite3
+from sqlite3 import Error
 import requests
-
-import config
-
 from datetime import datetime
 
-#from MYCRIPTOS import api
+from MYCRIPTOS.db import*
+from MYCRIPTOS.api import *
+
 
 
 
@@ -32,13 +32,13 @@ class Movimientos(ttk.Frame):
         lbl_TO =ttk.Label(v1, text="TO", width= 5).pack(side=LEFT)
         lbl_Q =ttk.Label(v1, text="Q", width= 5).pack(side=LEFT)
         lbl_PU =ttk.Label(v1, text="PU", width= 5).pack(side=LEFT)
-        ttk.Label(V11,textvariable=self.Consulta, background="gray", anchor="e", width= 6).pack(side=LEFT)
-        ttk.Label(V11,textvariable=self.Consulta, background="lightgray", anchor="e", width= 6).pack(side=LEFT)
-        ttk.Label(V11,textvariable=self.Consulta, background="gray", anchor="e", width= 6).pack(side=LEFT)
-        ttk.Label(V11,textvariable=self.Consulta, background="lightgray", anchor="e", width= 6).pack(side=LEFT)
-        ttk.Label(V11,textvariable=self.Consulta, background="gray", anchor="e", width= 6).pack(side=LEFT)
-        ttk.Label(V11,textvariable=self.Consulta, background="lightgray", anchor="e", width= 6).pack(side=LEFT)
-        ttk.Label(V11,textvariable=self.Consulta, background="gray", anchor="e", width= 6).pack(side=LEFT)
+        ttk.Label(V11,textvariable=self.Consulta, relief= "groove", anchor="e", width= 6).pack(side=LEFT)
+        ttk.Label(V11,textvariable=self.Consulta, relief= "groove", anchor="e", width= 6).pack(side=LEFT)
+        ttk.Label(V11,textvariable=self.Consulta, relief= "groove", anchor="e", width= 6).pack(side=LEFT)
+        ttk.Label(V11,textvariable=self.Consulta, relief= "groove", anchor="e", width= 6).pack(side=LEFT)
+        ttk.Label(V11,textvariable=self.Consulta, relief= "groove", anchor="e", width= 6).pack(side=LEFT)
+        ttk.Label(V11,textvariable=self.Consulta, relief= "groove", anchor="e", width= 6).pack(side=LEFT)
+        ttk.Label(V11,textvariable=self.Consulta, relief= "groove", anchor="e", width= 6).pack(side=LEFT)
     
     def Consulta(self):
         pass
@@ -55,19 +55,22 @@ class Compras(ttk.Frame):
         FROM.pack(side=LEFT, pady= 5)
         Q=ttk.Frame(FROM)
         Q.pack(side=BOTTOM, pady= 5)
+        nuevasMonedas= self.AñadeMoneda()
         
-        self.CurrencyFrom= StringVar()
+        
         self.lblFrom = ttk.Label(FROM, text="From: ",  width=5)
-        self.lblFrom.pack(side= LEFT, fill= X, padx= 5, pady= 10)   
-        self.comboFrom = ttk.Combobox(FROM, values=("EUR"),textvariable= self.CurrencyFrom, state="readonly")
+        self.lblFrom.pack(side= LEFT, fill= X, padx= 5, pady= 10)
+        self.CurrencyFrom= StringVar()   
+        self.comboFrom = ttk.Combobox(FROM, values=nuevasMonedas, textvariable= self.CurrencyFrom, state="readonly")
         self.comboFrom.pack(side= LEFT)
+
 
         self.labelQ = ttk.Label(Q, text="Q:" ,width= 4)
         self.labelQ.pack(side= LEFT, fill= X,  padx= 5, pady= 10)
         self.QFrom= DoubleVar()
         self.entryQFrom = ttk.Entry(Q, textvariable=self.QFrom, width=23)
         self.entryQFrom.pack(side=LEFT, fill= X,  padx=5, pady=10)
-        
+       
 
         compras =ttk.Frame(self)
         compras.pack(side=LEFT)
@@ -85,86 +88,84 @@ class Compras(ttk.Frame):
         textvariable= self.CurrencyTo , state="readonly")
         self.comboTo.pack(side= LEFT)
 
-        self.labelQ = ttk.Label(Q, text="Q:" ,width= 5)
-        self.labelQ.pack(side= LEFT,   padx= 10, pady= 10)
+        self.labelQ = ttk.Label(Q, text="Q:" ,width= 5).pack(side= LEFT,   padx= 10, pady= 10)
         self.QTo=DoubleVar()
-        self.entryQTo = ttk.Entry(Q, textvariable=self.QTo, width=23)
-        self.entryQTo.pack(side=LEFT,  padx=10, pady=10)
-
-        self.labelPU = ttk.Label(PU, text="P.U. : ", width=5)
-        self.labelPU.pack(side= LEFT,   padx= 10, pady= 10)
-        self.PU=DoubleVar()
-        self.entryPU = ttk.Entry(PU ,textvariable=self.PU, width=23)
-        self.entryPU.pack(side=LEFT,   padx=10, pady=10) 
-
+        self.labelQTo = ttk.Label(Q, textvariable=self.QTo, width=23, relief= "groove")
+        self.labelQTo.pack(side=LEFT,  padx=10, pady=10)
+        
+        self.labelPU = ttk.Label(PU, text="P.U. : " ,width=5).pack(side= LEFT, padx= 10, pady= 10)
+        self.PUnd=DoubleVar()
+        self.labelPU = ttk.Label (PU ,textvariable= self.PUnd, width=23, relief= "groove")
+        self.labelPU.pack(side=LEFT, padx=10, pady=10) 
+        
         compras =ttk.Frame(self)
         compras.pack(side=LEFT)  
         v4= ttk.Frame(compras)
         v4.pack(side=LEFT, padx= 120)
         
+        
         ttk.Button(v4,text="Aceptar", command = self.Comprar).pack(side= TOP , pady=5)
         ttk.Button(v4,text="Cancelar").pack(side= TOP,pady= 5)
         ttk.Button(v4,text="Consulta Api", command= self.peticion).pack(side= TOP , pady=5)
- 
-    
 
+        labelNTransaccion = Label(text= "---------Nueva Transaccion------------------------------------------------")
+        labelNTransaccion.place(x= 60, y= 60)
+ 
     def peticion(self):
-        
-        CurrencyFrom = self.CurrencyFrom.get() 
+
+
+        CurrencyF = self.CurrencyFrom.get() 
         Qf = float(self.QFrom.get())
-        CurrencyTo = self.CurrencyTo.get()
-        
-        url_template = "https://pro-api.coinmarketcap.com/v1/tools/price-conversion?amount={}&symbol={}&convert={}&CMC_PRO_API_KEY=7cbc308d-5a35-45c2-bfe2-c8da53d30f41".format(Qf, CurrencyFrom, CurrencyTo)
-        respuesta = requests.get(url_template)
-
-
-        if respuesta.status_code == 200:      
-            datos = respuesta.json()   
-            CurrencyPurchase = datos["data"]["quote"][CurrencyTo]["price"]
-            self.QTo.set(CurrencyPurchase)
-            PU= float(Qf / CurrencyPurchase)
-            self.PU.set(PU)
-            if datos["data"]["quote"][CurrencyTo]["price"] <= 0 :
-                print ("cripto elegida tiene importe inferior a cero")
-
-            elif  datos["data"]["quote"][CurrencyTo]["price"] > 0 :
-                respuesta = url_template.format( Qf, CurrencyFrom, CurrencyTo)    
-        else:
-            print("Error de consulta: {}".format(respuesta.status_code))
-        
-
- 
-
-
+        CurrencyT = self.CurrencyTo.get()
+       
+        CurrencyPurchase = peticion(CurrencyF, Qf, CurrencyT)
+        self.QTo.set(CurrencyPurchase)
+        PU= round(float(Qf / CurrencyPurchase), 2)
+        self.PUnd.set(PU)
+            
+       
 
     def Comprar(self):
         
-        conn = sqlite3.connect(DBFILE)
+        CurrencyF = self.CurrencyFrom.get() 
+        Qf = float(self.QFrom.get())
+        CurrencyT = self.CurrencyTo.get()
+        CurrencyP = self.QTo.get()
+        
+        comprar= Comprar(CurrencyF, Qf,CurrencyT,CurrencyP)
+       
+
+    def AñadeMoneda(self):
+        conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
         c = conn.cursor()
 
-        now=datetime.now()
-        nowD=now.date()
-        nowT=now.time()
-
-        id =["id"]
-        print(id)
-        date= nowD
-        time = nowT
-        CurrencyFrom = self.CurrencyFrom.get() 
-        Qf = float(self.QFrom.get())
-        CurrencyTo = self.CurrencyTo.get()
-        CurrencyPurchase=self.QTo.set
-        
-
-
-        c.execute()
-
-        compra('INSERT INTO MOVEMENTS (id, Date, Time, From, From Q, To, To Q ) VALUES (?,?,?,?,?,?,?);', (id, date, time, CurrencyFrom,Qf,CurrencyTo,CurrencyPurchase))
+        c.execute( "SELECT CurrencyT from MOVEMENTS ;")
+        monedasBD= c.fetchall()
         conn.commit()
+        conn.close()       
 
-        print(c.fetchall())
+        l=["EUR",]
 
+        for m in monedasBD:
+            if m[0] != ""  and  m[0] not in l:              
+                l.append(m[0])        
+        return l
 
+    def EliminaMonedas(self):
+        conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
+        c = conn.cursor()
+
+        c.execute( "SELECT CurrencyT , CurrencyQ from MOVEMENTS ;")
+        saldoMoneda = c.fetchall()
+        conn.commit()
+        conn.close()  
+
+        DictMonedas = dict(saldoMoneda)
+        cripto= DictMonedas.keys()
+        cantidad=DictMonedas.values()
+
+       
+        
 
 
 class Resumen(ttk.Frame):
@@ -177,30 +178,90 @@ class Resumen(ttk.Frame):
         v5= ttk.Frame(resumen)
         v5.pack(side=BOTTOM, ipady= 10)
 
-
-
         separar=ttk.Separator(v5, orient=HORIZONTAL).pack(side=TOP, padx=5, pady=5)
 
+       
         ttk.Label(v5, text="€ invertidos:", width= 10).pack(side= LEFT, fill= BOTH, expand= True, padx= 5, pady= 5)       
-        ttk.Entry(v5, width= 15).pack(side=LEFT, padx=5, pady=5)
+        self.eurosInvertidos= ttk.Label(v5, width= 15, relief= "groove")
+        self.eurosInvertidos.pack(side=LEFT, padx=5, pady=5)
 
         ttk.Label(v5, text=" Valor actual:", width= 12).pack(side= LEFT, fill= BOTH, expand= True, padx= 5, pady= 5)       
-        ttk.Entry(v5, width= 15).pack(side=LEFT, padx=5, pady=5)
+        self.miValor =ttk.Label(v5, width= 15, relief= "groove")
+        self.miValor.pack(side=LEFT, padx=5, pady=5)
 
-        ttk.Button(v5,text="Calcular").pack(side= LEFT, fill= X )
-        ttk.Button(v5,text="Consultar Saldo", command=self.Saldo,).pack(side= LEFT, fill= X )
+        ttk.Button(v5,text="Calcular", command= self.status).pack(side= LEFT, fill= X )
+        ttk.Button(v5,text="Consultar Saldo", command=self.saldo).pack(side= LEFT, fill= X )
 
+    def status(self):
+        conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
+        c = conn.cursor()
+        
+        c.execute( "SELECT SUM(MoneyQ) from MOVEMENTS where MoneyF ='EUR';")
+        eurosInvertidos= c.fetchall()
+        conn.commit()
+        conn.close()
+        self.eurosInvertidos.config(text=eurosInvertidos)
+        
+        c.execute( "SELECT SUM(CurrencyQ) from MOVEMENTS where CurrencyT ='ETH';")
+        miValor= c.fetchall()
+        conn.commit()
+        conn.close()
+        self.miValor.config(text=miValor)
+ 
 
-    def Saldo(self):
+    def saldo(self):
+       
         saldo =Toplevel()
-        saldo.geometry("400x100")
+        saldo.geometry("1000x100")
         saldo.title("Saldo Criptos")
         saldo.grab_set()
+        #resumen=ttk.Frame(saldo)
+        #resument.pack(side=TOP)
         
-        lblEUR= ttk.Label(saldo,text="Criptos").pack(side=TOP)
+        self.lblEUR= ttk.Label(saldo,text="Criptos").pack(side=TOP)
 
+
+        ttk.Label(saldo, text=" saldo en criptos :", width= 12).pack(side= LEFT, fill= BOTH, expand= True, padx= 5, pady= 5)
+        self.criptoSaldo=ttk.Label(saldo, width= 100, relief= "groove")
+        self.criptoSaldo.pack(side=LEFT, padx=5, pady=5)
+   
+        
+    
+        conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
+        c = conn.cursor()
+
+        c.execute( "SELECT CurrencyT , CurrencyQ from MOVEMENTS ;")
+        criptoSaldo = c.fetchall()
+        conn.commit()
+        conn.close()  
+
+        
+       
+        self.criptoSaldo.config(text=criptoSaldo)
+  
 
         
 
 
 
+
+
+            
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+    

@@ -1,28 +1,36 @@
 import sqlite3
-from datetime import date
+from datetime import datetime
+from sqlite3 import Error
+
+
+def sql_connection():
+        try:
+            conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
+            return conn
+
+        except Error:
+            print(Error)
+
+
+def Comprar(CurrencyF, Qf,CurrencyT,CurrencyP):
+        conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
+        c = conn.cursor()
+
+        now=datetime.now()  
+        nowD=now.date()   
+        nowT=now.time()
+  
+        c.execute('INSERT INTO MOVEMENTS ( Date, Time, MoneyF, MoneyQ, CurrencyT, CurrencyQ ) VALUES (?,?,?,?,?,?);', 
+            ( str(nowD), str(nowT), CurrencyF, Qf ,CurrencyT, CurrencyP
+            ))
+
+        conn.commit()
+        conn.close()
+sql_connection()
 
 
 
-def Comprar(self):
-    conn = sqlite3.connect(DBFILE)
-    c = conn.cursor()
 
-    now=datetime.now()
-    nowD=now.date()
-    nowT=now.time()
 
-    id =["id"]
-    print(id)
-    date= nowD
-    time = nowT
-    CurrencyFrom = self.CurrencyFrom.get() 
-    Qf = float(self.QFrom.get())
-    CurrencyTo = self.CurrencyTo.get()
-    CurrencyPurchase = datos["data"]["quote"][CurrencyTo]["price"]
-    
 
-    c.execute()
-    compras ('INSERT INTO Movements VALUES (?,?,?,?,?,?,?)', id, date, time, CurrencyFrom,Qf,CurrencyTo,CurrencyPurchase)
-    conn.commit()
 
-    print(c.fetchall())
