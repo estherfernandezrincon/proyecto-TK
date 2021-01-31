@@ -1,14 +1,49 @@
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
 import sqlite3
 from sqlite3 import Error
 import requests
 from datetime import datetime
+from functools import partial
 
 from MYCRIPTOS.db import*
 from MYCRIPTOS.api import *
 
 
+parrilla =[
+    {
+        'text': 'DATE',
+        'r': 0,
+        'c': 1,
+    },
+    {
+        'text': 'TIME',
+        'r': 0,
+        'c': 2,
+    },
+    {
+        'text': 'FROM',
+        'r': 0,
+        'c': 3,
+
+    },
+    {
+        'text': 'Q',
+        'r': 0,
+        'c': 4,
+    },
+    {
+        'text': 'TO',
+        'r': 0,
+        'c': 5,
+    },
+    {
+        'text': 'Q',
+        'r': 0,
+        'c': 6,
+    }
+]
 
 
 
@@ -16,32 +51,54 @@ from MYCRIPTOS.api import *
 class Movimientos(ttk.Frame):
 
     def __init__(self, parent):
-        ttk.Frame.__init__(self, parent)
-
+        ttk.Frame.__init__(self, parent)    
+    
         movimientos = ttk.Frame(self)
         movimientos.pack(side=TOP)
         v1= ttk.Frame(movimientos)
         v1.pack(side=TOP, ipady= 10)
         V11 = ttk.Frame(v1)
         V11.pack(side=BOTTOM, ipady=5)
+        lbl_Fecha= ttk.Label(v1, text="Fecha", width= 13).pack(side=LEFT)
+        lbl_Hora =ttk.Label(v1, text="Hora", width= 13).pack(side=LEFT)
+        lbl_From =ttk.Label(v1, text="From", width= 13).pack(side=LEFT)
+        lbl_Q =ttk.Label(v1, text="Q", width= 13).pack(side=LEFT)
+        lbl_TO =ttk.Label(v1, text="TO", width= 13).pack(side=LEFT)
+        lbl_Q =ttk.Label(v1, text="Q", width= 13).pack(side=LEFT)
+        lbl_PU =ttk.Label(v1, text="PU", width= 13).pack(side=LEFT)
 
-        lbl_Fecha= ttk.Label(v1, text="Fecha", width= 8).pack(side=LEFT)
-        lbl_Hora =ttk.Label(v1, text="Hora", width= 8).pack(side=LEFT)
-        lbl_From =ttk.Label(v1, text="From", width= 8).pack(side=LEFT)
-        lbl_Q =ttk.Label(v1, text="Q", width= 5).pack(side=LEFT)
-        lbl_TO =ttk.Label(v1, text="TO", width= 5).pack(side=LEFT)
-        lbl_Q =ttk.Label(v1, text="Q", width= 5).pack(side=LEFT)
-        lbl_PU =ttk.Label(v1, text="PU", width= 5).pack(side=LEFT)
-        ttk.Label(V11,textvariable=self.Consulta, relief= "groove", anchor="e", width= 6).pack(side=LEFT)
-        ttk.Label(V11,textvariable=self.Consulta, relief= "groove", anchor="e", width= 6).pack(side=LEFT)
-        ttk.Label(V11,textvariable=self.Consulta, relief= "groove", anchor="e", width= 6).pack(side=LEFT)
-        ttk.Label(V11,textvariable=self.Consulta, relief= "groove", anchor="e", width= 6).pack(side=LEFT)
-        ttk.Label(V11,textvariable=self.Consulta, relief= "groove", anchor="e", width= 6).pack(side=LEFT)
-        ttk.Label(V11,textvariable=self.Consulta, relief= "groove", anchor="e", width= 6).pack(side=LEFT)
-        ttk.Label(V11,textvariable=self.Consulta, relief= "groove", anchor="e", width= 6).pack(side=LEFT)
+        btn= ttk.Button(movimientos, text=" Iniciar", command= self.mostrarDatos)
+        btn.pack(side= RIGHT)
+
+        self.tabla = ttk.Label(movimientos, background="white", width=100)
+        self.tabla.pack(side=LEFT, ipadx=15, ipady= 15)
+
+
+
+    def mostrarDatos(self):
+
+
+        conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
+        c = conn.cursor()
+        c.execute('SELECT   Date, Time, MoneyF, MoneyQ, CurrencyT, CurrencyQ from MOVEMENTS ;')
+  
+        resultado= c.fetchall()
+        conn.commit()
+        conn.close()
+        
+        for f in resultado:            
+            for c in resultado:
+          
+                m= (f,"\n",c)            
+                print(m)
+                
+
+        self.tabla.config(text=m)
     
-    def Consulta(self):
-        pass
+     
+
+    
+            
 
 
 
@@ -64,13 +121,17 @@ class Compras(ttk.Frame):
         self.comboFrom = ttk.Combobox(FROM, values=nuevasMonedas, textvariable= self.CurrencyFrom, state="readonly")
         self.comboFrom.pack(side= LEFT)
 
-
+        
         self.labelQ = ttk.Label(Q, text="Q:" ,width= 4)
         self.labelQ.pack(side= LEFT, fill= X,  padx= 5, pady= 10)
         self.QFrom= DoubleVar()
         self.entryQFrom = ttk.Entry(Q, textvariable=self.QFrom, width=23)
         self.entryQFrom.pack(side=LEFT, fill= X,  padx=5, pady=10)
-       
+        
+        self.errorEntry= ttk.Label(Q, foreground="red")
+        self.errorEntry.pack(side=LEFT)
+        
+        
 
         compras =ttk.Frame(self)
         compras.pack(side=LEFT)
@@ -108,20 +169,33 @@ class Compras(ttk.Frame):
         ttk.Button(v4,text="Cancelar").pack(side= TOP,pady= 5)
         ttk.Button(v4,text="Consulta Api", command= self.peticion).pack(side= TOP , pady=5)
 
-        labelNTransaccion = Label(text= "---------Nueva Transaccion------------------------------------------------")
-        labelNTransaccion.place(x= 60, y= 60)
- 
-    def peticion(self):
+    
+        
+    def entrada_permitida(self):
+        valor= float(self.QFrom.get())
+        error= "solo se permiten numeros"
 
+        if valor != "0123456789":
+            return error
+        else:
+            return valor
+        
+        self.errorEntry.config(text=error)
+        
+    def peticion(self):
+        
 
         CurrencyF = self.CurrencyFrom.get() 
         Qf = float(self.QFrom.get())
         CurrencyT = self.CurrencyTo.get()
+        
        
         CurrencyPurchase = peticion(CurrencyF, Qf, CurrencyT)
         self.QTo.set(CurrencyPurchase)
         PU= round(float(Qf / CurrencyPurchase), 2)
         self.PUnd.set(PU)
+
+
             
        
 
@@ -186,47 +260,60 @@ class Resumen(ttk.Frame):
         self.eurosInvertidos.pack(side=LEFT, padx=5, pady=5)
 
         ttk.Label(v5, text=" Valor actual:", width= 12).pack(side= LEFT, fill= BOTH, expand= True, padx= 5, pady= 5)       
-        self.miValor =ttk.Label(v5, width= 15, relief= "groove")
-        self.miValor.pack(side=LEFT, padx=5, pady=5)
+        self.valorAct =ttk.Label(v5, width= 15, relief= "groove")
+        self.valorAct.pack(side=LEFT, padx=5, pady=5)
 
-        ttk.Button(v5,text="Calcular", command= self.status).pack(side= LEFT, fill= X )
+        ttk.Button(v5,text="Calcular", command= self.status ).pack(side= LEFT, fill= X )
         ttk.Button(v5,text="Consultar Saldo", command=self.saldo).pack(side= LEFT, fill= X )
+        ttk.Button(v5,text="Cripto a EUR", command= self.calculoValor ).pack(side= LEFT, fill= X )
 
     def status(self):
+
         conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
-        c = conn.cursor()
-        
+        c = conn.cursor()       
         c.execute( "SELECT SUM(MoneyQ) from MOVEMENTS where MoneyF ='EUR';")
         eurosInvertidos= c.fetchall()
         conn.commit()
         conn.close()
         self.eurosInvertidos.config(text=eurosInvertidos)
-        
+
+    def calculoValor(self):
+        conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
+        c = conn.cursor()
         c.execute( "SELECT SUM(CurrencyQ) from MOVEMENTS where CurrencyT ='ETH';")
         miValor= c.fetchall()
         conn.commit()
         conn.close()
-        self.miValor.config(text=miValor)
+
+        CurrencyF= 'ETH'
+        valorEUR= valor
+        url_template = "https://pro-api.coinmarketcap.com/v1/tools/price-conversion?amount={}&symbol={}&convert=EUR&CMC_PRO_API_KEY=7cbc308d-5a35-45c2-bfe2-c8da53d30f41".format(miValor, CurrencyF,APIkey)
+        respuesta = requests.get(url_template)
+
+        if respuesta.status_code == 200:      
+            datos = respuesta.json()   
+            valor = round(datos["data"]["quote"]["EUR"]["price"], 2)
+            self.valorAct.config(text=valorEUR)
+        return valor
+        
+        
  
 
     def saldo(self):
        
         saldo =Toplevel()
-        saldo.geometry("1000x100")
+        saldo.geometry("700x100")
         saldo.title("Saldo Criptos")
         saldo.grab_set()
-        #resumen=ttk.Frame(saldo)
-        #resument.pack(side=TOP)
+
         
         self.lblEUR= ttk.Label(saldo,text="Criptos").pack(side=TOP)
 
 
-        ttk.Label(saldo, text=" saldo en criptos :", width= 12).pack(side= LEFT, fill= BOTH, expand= True, padx= 5, pady= 5)
-        self.criptoSaldo=ttk.Label(saldo, width= 100, relief= "groove")
+        ttk.Label(saldo, text=" saldo en criptos :", width= 15).pack(side= LEFT, fill= BOTH, expand= True, padx= 5, pady= 5)
+        self.criptoSaldo=ttk.Label(saldo, width= 70, relief= "groove")
         self.criptoSaldo.pack(side=LEFT, padx=5, pady=5)
    
-        
-    
         conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
         c = conn.cursor()
 
@@ -235,9 +322,12 @@ class Resumen(ttk.Frame):
         conn.commit()
         conn.close()  
 
-        
-       
-        self.criptoSaldo.config(text=criptoSaldo)
+        for c in criptoSaldo:
+            for x in criptoSaldo:
+                z=(c,"\n",x)
+                print(z)
+      
+        self.criptoSaldo.config(text=z)
   
 
         

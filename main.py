@@ -9,16 +9,18 @@ class Cripto(Tk):
     def __init__(self):
         Tk.__init__(self)
         self.title("My Cripto Exchange")
-        self.geometry("900x300")
+        self.geometry("900x500")
         self.iconbitmap("imagenes/bolsa.ico")
 
 
         self.movimientos = entidades.Movimientos(self)
         self.movimientos.pack(side=TOP)
+       
         
         self.compras = entidades.Compras(self)
         self.compras.pack(side=TOP)
-        #self.compras.AñadeMoneda()
+        self.compras.entrada_permitida()
+     
     
 
         self.resumen = entidades.Resumen(self)

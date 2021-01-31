@@ -13,19 +13,25 @@ def sql_connection():
 
 
 def Comprar(CurrencyF, Qf,CurrencyT,CurrencyP):
-        conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
-        c = conn.cursor()
+    #try:
+    conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
+    c = conn.cursor()
 
-        now=datetime.now()  
-        nowD=now.date()   
-        nowT=now.time()
-  
-        c.execute('INSERT INTO MOVEMENTS ( Date, Time, MoneyF, MoneyQ, CurrencyT, CurrencyQ ) VALUES (?,?,?,?,?,?);', 
-            ( str(nowD), str(nowT), CurrencyF, Qf ,CurrencyT, CurrencyP
-            ))
+    now=datetime.now()  
+    nowD=now.date()   
+    nowT=now.time()
 
-        conn.commit()
-        conn.close()
+    c.execute('INSERT INTO MOVEMENTS ( Date, Time, MoneyF, MoneyQ, CurrencyT, CurrencyQ ) VALUES (?,?,?,?,?,?);', 
+        ( str(nowD), str(nowT), CurrencyF, Qf ,CurrencyT, CurrencyP
+        ))
+    
+        #messagebox.showinfo("correcto")
+
+    #except:
+        #messagebox.showwarning("problema conexion")
+
+    conn.commit()
+    conn.close()
 sql_connection()
 
 
