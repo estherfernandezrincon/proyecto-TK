@@ -19,13 +19,12 @@ class Cripto(Tk):
         
         self.compras = entidades.Compras(self)
         self.compras.pack(side=TOP)
-        self.compras.entrada_permitida()
-     
+        
     
 
         self.resumen = entidades.Resumen(self)
         self.resumen.pack(side=TOP)
-        #self.resumen.CalcularSaldo()
+        self.resumen.status()
     
 
 

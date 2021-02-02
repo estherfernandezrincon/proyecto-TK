@@ -5,7 +5,11 @@ import sqlite3
 from sqlite3 import Error
 import requests
 from datetime import datetime
-from functools import partial
+
+
+
+
+
 
 from MYCRIPTOS.db import*
 from MYCRIPTOS.api import *
@@ -81,21 +85,21 @@ class Movimientos(ttk.Frame):
         conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
         c = conn.cursor()
         c.execute('SELECT   Date, Time, MoneyF, MoneyQ, CurrencyT, CurrencyQ from MOVEMENTS ;')
-  
+
         resultado= c.fetchall()
         conn.commit()
         conn.close()
         
         for f in resultado:            
             for c in resultado:
-          
+        
                 m= (f,"\n",c)            
                 print(m)
-                
+            
 
         self.tabla.config(text=m)
     
-     
+
 
     
             
@@ -111,6 +115,7 @@ class Compras(ttk.Frame):
         FROM= ttk.Frame(compras)
         FROM.pack(side=LEFT, pady= 5)
         Q=ttk.Frame(FROM)
+        vcmd= Q.register(self.entrada_permitida) 
         Q.pack(side=BOTTOM, pady= 5)
         nuevasMonedas= self.AñadeMoneda()
         
@@ -125,12 +130,8 @@ class Compras(ttk.Frame):
         self.labelQ = ttk.Label(Q, text="Q:" ,width= 4)
         self.labelQ.pack(side= LEFT, fill= X,  padx= 5, pady= 10)
         self.QFrom= DoubleVar()
-        self.entryQFrom = ttk.Entry(Q, textvariable=self.QFrom, width=23)
-        self.entryQFrom.pack(side=LEFT, fill= X,  padx=5, pady=10)
-        
-        self.errorEntry= ttk.Label(Q, foreground="red")
-        self.errorEntry.pack(side=LEFT)
-        
+        self.entryQFrom = ttk.Entry(Q, textvariable=self.QFrom, width=23, validatecommand=(vcmd,'%S','%P','%s' ), validate="all")
+        self.entryQFrom.pack(side=LEFT, fill= X,  padx=5, pady=10)       
         
 
         compras =ttk.Frame(self)
@@ -171,17 +172,11 @@ class Compras(ttk.Frame):
 
     
         
-    def entrada_permitida(self):
-        valor= float(self.QFrom.get())
-        error= "solo se permiten numeros"
+    def entrada_permitida(self,S,P,s):
+        
+        print("S: ",S, "s: ",s, "P: ",P)
 
-        if valor != "0123456789":
-            return error
-        else:
-            return valor
-        
-        self.errorEntry.config(text=error)
-        
+
     def peticion(self):
         
 
@@ -256,8 +251,8 @@ class Resumen(ttk.Frame):
 
        
         ttk.Label(v5, text="€ invertidos:", width= 10).pack(side= LEFT, fill= BOTH, expand= True, padx= 5, pady= 5)       
-        self.eurosInvertidos= ttk.Label(v5, width= 15, relief= "groove")
-        self.eurosInvertidos.pack(side=LEFT, padx=5, pady=5)
+        self.miEUR= ttk.Label(v5, width= 15, relief= "groove")
+        self.miEUR.pack(side=LEFT, padx=5, pady=5)
 
         ttk.Label(v5, text=" Valor actual:", width= 12).pack(side= LEFT, fill= BOTH, expand= True, padx= 5, pady= 5)       
         self.valorAct =ttk.Label(v5, width= 15, relief= "groove")
@@ -265,37 +260,101 @@ class Resumen(ttk.Frame):
 
         ttk.Button(v5,text="Calcular", command= self.status ).pack(side= LEFT, fill= X )
         ttk.Button(v5,text="Consultar Saldo", command=self.saldo).pack(side= LEFT, fill= X )
-        ttk.Button(v5,text="Cripto a EUR", command= self.calculoValor ).pack(side= LEFT, fill= X )
+  
 
     def status(self):
 
         conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
-        c = conn.cursor()       
-        c.execute( "SELECT SUM(MoneyQ) from MOVEMENTS where MoneyF ='EUR';")
-        eurosInvertidos= c.fetchall()
+        c = conn.cursor()  
+        c.execute( "SELECT SUM(MoneyQ) FROM MOVEMENTS WHERE MoneyF ='EUR';")
+        miEUR= c.fetchall()    
+
+        c.execute("SELECT MoneyF, MoneyQ FROM MOVEMENTS;")
+        sumaFrom= c.fetchall()
+        dictFrom={}
+        for elements in sumaFrom:
+            if elements[0] in dictFrom:
+                dictFrom[elements[0]] += elements[1]
+            else:
+                dictFrom[elements[0]] = elements[1]
+        print(dictFrom)
+        
+        c.execute( "SELECT CurrencyT, CurrencyQ FROM MOVEMENTS;")
+        sumaTo=c.fetchall() 
+    
         conn.commit()
         conn.close()
-        self.eurosInvertidos.config(text=eurosInvertidos)
-
-    def calculoValor(self):
+       
+        self.miEUR.config(text=miEUR)
+        
+        dictTo=dict(sumaTo)
+       
+        monedasT=("EUR","BTC", "ETH", "XRP", "LTC", "BCH", "BNB", "USDT", "EOS", "BSV", "XLM", "ADA", "TRX")
+        l=[]
+        m=[]
+        
+        for monedas in dictFrom:            
+            if monedas in dictTo:
+                l.append(monedas)
+                if monedas in dictFrom:
+                    if monedas in dictTo:
+                        valorCripto=dictTo[monedas]-dictFrom[monedas]                       
+                        m.append(valorCripto)
+                        #d =  dict(zip(l,[valorCripto]))     
+                        #print(d)  
+                
+                        #print(monedas)
+                        #print(l)
+        d=dict(zip(l,m))
+        print(d)
+        '''
+        total=dict()
+        for clave,valor in dictFrom.items():
+            for clave2, valor2 in dictTo.items():
+                if clave== clave2:
+                    total[clave]  =  valor -valor2
+        print(total)                    
+        '''
+    def bd(self):
         conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
         c = conn.cursor()
-        c.execute( "SELECT SUM(CurrencyQ) from MOVEMENTS where CurrencyT ='ETH';")
-        miValor= c.fetchall()
-        conn.commit()
-        conn.close()
 
-        CurrencyF= 'ETH'
-        valorEUR= valor
+                
+           
+
+
+              
+        
+
+        
+
+
+
+        
+
+        
+
+             
+        
+
+        
+       
+
+
+            
+
+   
+
+
+
+        '''
         url_template = "https://pro-api.coinmarketcap.com/v1/tools/price-conversion?amount={}&symbol={}&convert=EUR&CMC_PRO_API_KEY=7cbc308d-5a35-45c2-bfe2-c8da53d30f41".format(miValor, CurrencyF,APIkey)
         respuesta = requests.get(url_template)
 
         if respuesta.status_code == 200:      
             datos = respuesta.json()   
             valor = round(datos["data"]["quote"]["EUR"]["price"], 2)
-            self.valorAct.config(text=valorEUR)
-        return valor
-        
+        '''
         
  
 
