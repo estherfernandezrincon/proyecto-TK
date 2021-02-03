@@ -277,10 +277,15 @@ class Resumen(ttk.Frame):
                 dictFrom[elements[0]] += elements[1]
             else:
                 dictFrom[elements[0]] = elements[1]
-        print(dictFrom)
         
         c.execute( "SELECT CurrencyT, CurrencyQ FROM MOVEMENTS;")
         sumaTo=c.fetchall() 
+        dictTo={}
+        for elements in sumaTo:
+            if elements[0] in dictTo:
+                dictTo[elements[0]] += elements[1]
+            else:
+                dictTo[elements[0]] = elements[1]
     
         conn.commit()
         conn.close()
@@ -289,7 +294,6 @@ class Resumen(ttk.Frame):
         
         dictTo=dict(sumaTo)
        
-        monedasT=("EUR","BTC", "ETH", "XRP", "LTC", "BCH", "BNB", "USDT", "EOS", "BSV", "XLM", "ADA", "TRX")
         l=[]
         m=[]
         
@@ -300,63 +304,127 @@ class Resumen(ttk.Frame):
                     if monedas in dictTo:
                         valorCripto=dictTo[monedas]-dictFrom[monedas]                       
                         m.append(valorCripto)
-                        #d =  dict(zip(l,[valorCripto]))     
-                        #print(d)  
-                
-                        #print(monedas)
-                        #print(l)
-        d=dict(zip(l,m))
-        print(d)
+                        
+        d=dict(zip(l,m))      
+
+        amount=[]
+        symbol=[]
+        a=[]        
+        if 'EUR' in d:
+            del d['EUR']
+            print(d)
+        '''    
+            for i in d:
+                amount.append(d[i]) 
+                #print(amount)
+            for k in d.keys():
+                symbol.append(k)
+                #print(symbol) 
+        
+            valorActual=[]
+            for symbol in d:
+                for amount in d:
+                    cripto= d[0]
+                    cantidad = amount[d]
+                print(cripto)
+                print(cantidad)
+
+
+                url_template="https://pro-api.coinmarketcap.com/v1/tools/price-conversion?amount={}&symbol={}&convert=EUR&CMC_PRO_API_KEY=7cbc308d-5a35-45c2-bfe2-c8da53d30f41".format(cantidad,cripto)
+                respuesta = requests.get(url_template)
+                if respuesta.status_code == 200:      
+                    datos = respuesta.json() 
+                    valor= round(datos["data"]["quote"]["EUR"]["price"], 2)
+                    valorActual.append(valor)
+                    print(valorActual)            
+        '''    
+        
+
         '''
-        total=dict()
-        for clave,valor in dictFrom.items():
-            for clave2, valor2 in dictTo.items():
-                if clave== clave2:
-                    total[clave]  =  valor -valor2
-        print(total)                    
-        '''
-    def bd(self):
-        conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
-        c = conn.cursor()
+        for indice in range(len(d)):
+            if indice in d:
+                cripto= d[0] 
+                print(cripto) 
+                     
+                for  indice in range(len(d)):
+                    if indice in d:
+                        cantidad= d[1]
+                     
+                    print(cantidad)    
+
+        '''  
+        '''        
+        valorActual=[]
+        c=[]
+        a=[]
+        for k  in d.keys():
+            c.append(k)  
+        for v in d.values():                
+            a.append(v)
+
+        for item in c:  
+            if len(c) != 0:
+                cripto = c[0]
+            for item in a:  
+                if len(a) !=0:
+                    cantidad= a[0]
 
                 
-           
-
-
-              
+                url_template="https://pro-api.coinmarketcap.com/v1/tools/price-conversion?amount={}&symbol={}&convert=EUR&CMC_PRO_API_KEY=7cbc308d-5a35-45c2-bfe2-c8da53d30f41".format(cantidad, cripto)
+                respuesta = requests.get(url_template)
+                if respuesta.status_code == 200:      
+                    datos = respuesta.json() 
+                    valor= round(datos["data"]["quote"]["EUR"]["price"], 2)
+                    valorActual.append(valor)
+                    print(valorActual)
         
+        valorActual=[]
+        c=[]
+        a=[]
+        for k  in d.keys():
+            c.append(k)  
+        for v in d.values():                
+            a.append(v)
 
-        
+        for p in range(len(c)):
+            cripto= c[p]
+            cantidad= a[p]
+
+            url_template="https://pro-api.coinmarketcap.com/v1/tools/price-conversion?amount={}&symbol={}&convert=EUR&CMC_PRO_API_KEY=7cbc308d-5a35-45c2-bfe2-c8da53d30f41".format(cantidad, cripto)
+            respuesta = requests.get(url_template)
+            if respuesta.status_code == 200:      
+                datos = respuesta.json() 
+                valor= round(datos["data"]["quote"]["EUR"]["price"], 2)
+                valorActual.append(valor)
+                print(valorActual)
+    
+        '''
+        valorActual=[]
+        for key, value in d.items():
+            cripto= key
+            cantidad= value
+
+            url_template="https://pro-api.coinmarketcap.com/v1/tools/price-conversion?amount={}&symbol={}&convert=EUR&CMC_PRO_API_KEY=7cbc308d-5a35-45c2-bfe2-c8da53d30f41".format(cantidad, cripto)
+            respuesta = requests.get(url_template)
+            if respuesta.status_code == 200:      
+                datos = respuesta.json() 
+                valor= round(datos["data"]["quote"]["EUR"]["price"], 2)
+                valorActual.append(valor)
+                print(valorActual)
+    
 
 
 
-        
-
-        
-
-             
-        
-
-        
-       
 
 
+                    
             
 
-   
+            
+                
+            
 
-
-
-        '''
-        url_template = "https://pro-api.coinmarketcap.com/v1/tools/price-conversion?amount={}&symbol={}&convert=EUR&CMC_PRO_API_KEY=7cbc308d-5a35-45c2-bfe2-c8da53d30f41".format(miValor, CurrencyF,APIkey)
-        respuesta = requests.get(url_template)
-
-        if respuesta.status_code == 200:      
-            datos = respuesta.json()   
-            valor = round(datos["data"]["quote"]["EUR"]["price"], 2)
-        '''
-        
- 
+            
 
     def saldo(self):
        
@@ -384,7 +452,7 @@ class Resumen(ttk.Frame):
         for c in criptoSaldo:
             for x in criptoSaldo:
                 z=(c,"\n",x)
-                print(z)
+                #print(z)
       
         self.criptoSaldo.config(text=z)
   
