@@ -20,8 +20,12 @@ def peticion(CurrencyF, Qf, CurrencyT):
         CurrencyPurchase = round(datos["data"]["quote"][CurrencyT]["price"], 8)
         
         return CurrencyPurchase
+    else:
+        raise Exception("api error : {}".format(respuesta.status_code))
+    
 
-  
+ 
+
 
     
 

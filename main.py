@@ -12,19 +12,17 @@ class Cripto(Tk):
         self.geometry("900x500")
         self.iconbitmap("imagenes/bolsa.ico")
 
-
         self.movimientos = entidades.Movimientos(self)
         self.movimientos.pack(side=TOP)
-       
         
         self.compras = entidades.Compras(self)
         self.compras.pack(side=TOP)
-        
     
-
         self.resumen = entidades.Resumen(self)
         self.resumen.pack(side=TOP)
-        self.resumen.status()
+
+
+  
     
 
 
