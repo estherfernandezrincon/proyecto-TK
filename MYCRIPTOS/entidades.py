@@ -5,25 +5,35 @@ import sqlite3
 from sqlite3 import Error
 import requests
 from datetime import datetime
-
-from MYCRIPTOS.db import*
-from MYCRIPTOS.api import *
+from configparser import ConfigParser
 
 
+
+
+
+c= ConfigParser()
+c.read('MYCRIPTOS/config.ini')
+config = c ['DEFAULT']
+
+DBFILE= config ['DBFILE']
+APIkey= config ['APIkey']
 
 class Movimientos(ttk.Frame):
 
     def __init__(self, parent):
-        ttk.Frame.__init__(self, parent)    
+        ttk.Frame.__init__(self, parent)   
+        
     
         movimientos = ttk.Frame(self)
         movimientos.pack(side=TOP)
-        cabecera= "Fecha    Hora   From    Q    TO    Q     P.U. "
+        
+
+        cabecera= "Fecha       Hora      From       Q       TO       Q        P.U. "
         fontC= ("Helvetica", 11, "bold")
         fontL= ("Helvetica", 11)
-        datos= "{} {}  {} {:19.9f} {} {:19.9f} {:19.9f}"
+        
 
-
+        btnReset = ttk.Button(movimientos, text="Reset").pack(side=RIGHT)
         lbl_ppal= ttk.Label(movimientos, font=fontC,text= cabecera ,width= 100, anchor=CENTER)
         lbl_ppal.pack(side=TOP)
 
@@ -33,21 +43,27 @@ class Movimientos(ttk.Frame):
         scroll= Scrollbar(movimientos, orient= VERTICAL)
         scroll.pack(side= RIGHT, fill=Y)
 
-        myList= Listbox(movimientos, yscrollcommand= scroll.set, font=fontL, bd=0)
-        myList.pack(side=LEFT, fill=BOTH, expand=True)
+        myList= Listbox(movimientos, yscrollcommand= scroll.set, bd=0, font=fontL)
+        myList.pack(side=LEFT,fill=BOTH, expand=True)
+      
 
         scroll.config(command=myList.yview)
 
-        conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
-        c = conn.cursor()
-        c.execute('SELECT   Date, Time, MoneyF, MoneyQ , CurrencyT, CurrencyQ from MOVEMENTS ;')
+        try:
+            conn = sqlite3.connect(DBFILE)
+            c = conn.cursor()
+            c.execute('SELECT   Date, Time, MoneyF, MoneyQ , CurrencyT, CurrencyQ from MOVEMENTS ;')
 
-        resultado= c.fetchall()
-        conn.commit()
-        conn.close()
+            resultado= c.fetchall()
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print( "se ha producido un error en status: {}".format(e))
+            self.config(messagebox.showerror(message="error acceso base de datos", title=" ERROR BD"))            
 
         for i in resultado:
             myList.insert(END, i)
+           
 
 
 class Compras(ttk.Frame):
@@ -66,22 +82,19 @@ class Compras(ttk.Frame):
         separar=ttk.Separator(FROM, orient=HORIZONTAL)
         separar.pack(side=TOP, fill=BOTH, expand=True, padx=5, pady=5)
         lblNT= ttk.Label(FROM, text="NUEVA TRANSACCION", width= 25)
-        lblNT.pack(side=TOP)
-        
+        lblNT.pack(side=TOP)        
         
         self.lblFrom = ttk.Label(FROM, text="From: ",  width=5)
         self.lblFrom.pack(side= LEFT, fill= X, padx= 5, pady= 10)
         self.CurrencyFrom= StringVar()   
         self.comboFrom = ttk.Combobox(FROM, values=nuevasMonedas, textvariable= self.CurrencyFrom, state="readonly")
         self.comboFrom.pack(side= LEFT)
-
         
         self.labelQ = ttk.Label(Q, text="Q:" ,width= 4)
         self.labelQ.pack(side= LEFT, fill= X,  padx= 5, pady= 10)
         self.QFrom= DoubleVar()
         self.entryQFrom = ttk.Entry(Q, textvariable=self.QFrom, width=23, validatecommand=(vcmd,'%S','%P','%s' ), validate="all")
-        self.entryQFrom.pack(side=LEFT, fill= X,  padx=5, pady=10)       
-        
+        self.entryQFrom.pack(side=LEFT, fill= X,  padx=5, pady=10)               
 
         compras =ttk.Frame(self)
         compras.pack(side=LEFT)
@@ -91,12 +104,12 @@ class Compras(ttk.Frame):
         Q.pack(side=BOTTOM, pady= 5)
         PU = ttk.Frame(Q)
         PU.pack(side=BOTTOM, pady= 5)
+        values=("EUR","BTC", "ETH", "XRP", "LTC", "BCH", "BNB", "USDT", "EOS", "BSV", "XLM", "ADA", "TRX")
         
         self.CurrencyTo= StringVar()
         self.labelTo = ttk.Label(TO,  text="TO : ", width=7)
         self.labelTo.pack(side= LEFT,  padx= 10, pady= 10)
-        self.comboTo = ttk.Combobox(TO, values=("EUR","BTC", "ETH", "XRP", "LTC", "BCH", "BNB", "USDT", "EOS", "BSV", "XLM", "ADA", "TRX"),
-        textvariable= self.CurrencyTo , state="readonly")
+        self.comboTo = ttk.Combobox(TO, values= values,textvariable= self.CurrencyTo , state="readonly")
         self.comboTo.pack(side= LEFT)
 
         self.labelQ = ttk.Label(Q, text="Q:" ,width= 5).pack(side= LEFT,   padx= 10, pady= 10)
@@ -113,13 +126,15 @@ class Compras(ttk.Frame):
         compras.pack(side=LEFT)  
         v4= ttk.Frame(compras)
         v4.pack(side=LEFT, padx= 120)
-
         
-        ttk.Button(v4,text="Aceptar", command = self.Comprar).pack(side= TOP , pady=5)
-        ttk.Button(v4,text="Cancelar").pack(side= TOP,pady= 5)
-        ttk.Button(v4,text="Consulta Api", command= self.peticion).pack(side= TOP , pady=5)
+        btnA =ttk.Button(v4,text="Aceptar",command = self.Comprar).pack(side= TOP , pady=5)
+        btnCxl= ttk.Button(v4,text="Cancelar", state= "DISABLED",command=self.cancelar).pack(side= TOP,pady= 5)
+        btnC=ttk.Button(v4,text="Consulta Api",command= self.peticion).pack(side= TOP , pady=5)
 
-    
+    def cancelar(self):
+        if self.CurrencyFrom != "" :
+            btnCxl['state'] = NORMAL
+            
         
     def entrada_permitida(self,S,P,s):
         
@@ -128,18 +143,17 @@ class Compras(ttk.Frame):
 
     def peticion(self):
         try:
-
             CurrencyF = self.CurrencyFrom.get() 
             Qf = float(self.QFrom.get())
-            CurrencyT = self.CurrencyTo.get()
-            
+            CurrencyT = self.CurrencyTo.get()            
         
             CurrencyPurchase = peticion(CurrencyF, Qf, CurrencyT)
             print(CurrencyPurchase)
         except Exception as e:
             print("error en api: {}".format(e))
-            self.config(messagebox.showinfo(message="lo que queramos", title="API"))
+            self.config(messagebox.showinfo(message="Se ha producido un error en la API, intentalo más tarde", title="API"))
             return 
+
         self.QTo.set(CurrencyPurchase)
         PU= round(float(Qf / CurrencyPurchase), 2)
         self.PUnd.set(PU)
@@ -158,13 +172,18 @@ class Compras(ttk.Frame):
        
 
     def AñadeMoneda(self):
-        conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
-        c = conn.cursor()
+        try:
+            conn = sqlite3.connect(DBFILE)
+            c = conn.cursor()
 
-        c.execute( "SELECT CurrencyT from MOVEMENTS ;")
-        monedasBD= c.fetchall()
-        conn.commit()
-        conn.close()       
+            c.execute( "SELECT CurrencyT from MOVEMENTS ;")
+            monedasBD= c.fetchall()
+            conn.commit()
+            conn.close()   
+        except Exception as e:
+            print( "se ha producido un error en status: {}".format(e))
+            self.config(messagebox.showerror(message="error acceso base de datos", title=" ERROR BD"))            
+    
 
         l=["EUR",]
 
@@ -187,6 +206,8 @@ class Resumen(ttk.Frame):
         v5= ttk.Frame(resumen)
         v5.pack(side=BOTTOM, ipady= 10)
 
+
+
        
         ttk.Label(v5, text="€ invertidos:", width= 10).pack(side= LEFT, fill= BOTH, expand= True, padx= 5, pady= 5)       
         self.miEUR= ttk.Label(v5, width= 15, relief= "groove")
@@ -203,7 +224,7 @@ class Resumen(ttk.Frame):
 
     def status(self):
         try:
-            conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
+            conn = sqlite3.connect(DBFILE)
             c = conn.cursor()  
             c.execute( "SELECT SUM(MoneyQ) FROM MOVEMENTS WHERE MoneyF ='EUR';")
             miEUR= c.fetchall()  
@@ -211,8 +232,7 @@ class Resumen(ttk.Frame):
 
             c.execute("SELECT MoneyF, MoneyQ FROM MOVEMENTS;")
             sumaFrom= c.fetchall()
-            dictFrom={}
-            
+            dictFrom={}            
         
             for elements in sumaFrom:
                 if elements[0] in dictFrom:
@@ -234,15 +254,11 @@ class Resumen(ttk.Frame):
             conn.close()
         except Exception as e :
             print( "se ha producido un error en status: {}".format(e))
-            self.config(messagebox.showerror(message="error acceso base de datos", title=" ERROR "))
+            self.config(messagebox.showerror(message="error acceso base de datos", title=" ERROR BD"))
 
-        print(dictFrom)
-        print(dictTo)
       
         l=[]
         m=[]
-        print(l)
-        print(m)
         
         for monedas in dictFrom:            
             if monedas in dictTo:
@@ -250,13 +266,9 @@ class Resumen(ttk.Frame):
                 if monedas in dictFrom:
                     if monedas in dictTo:
                         valorCripto=dictTo[monedas]-dictFrom[monedas]                       
-                        m.append(valorCripto)
-                   
-
+                        m.append(valorCripto)                   
                         
         d=dict(zip(l,m)) 
-        print(d)
-    
 
         amount=[]
         symbol=[]
@@ -268,16 +280,20 @@ class Resumen(ttk.Frame):
         for k,v in d.items():
             cripto= k
             cantidad= v
-
-            url_template="https://pro-api.coinmarketcap.com/v1/tools/price-conversion?amount={}&symbol={}&convert=EUR&CMC_PRO_API_KEY=7cbc308d-5a35-45c2-bfe2-c8da53d30f41".format(cantidad, cripto)
+        try:
+            url_template="https://pro-api.coinmarketcap.com/v1/tools/price-conversion?amount={}&symbol={}&convert=EUR&CMC_PRO_API_KEY={}".format(cantidad, cripto, APIkey)
             respuesta = requests.get(url_template)
             if respuesta.status_code == 200:      
                 datos = respuesta.json() 
                 valor= round(datos["data"]["quote"]["EUR"]["price"], 2)
                 valorAct.append(valor)
-                #print(valorAct)
+      
+        except Exception as e:
+            print("error en api: {}".format(e))
+            self.config(messagebox.showinfo(message="Se ha prodocido un error en la API, intentalo más tarde", title="ERROR EN API"))
+            return 
 
-            self.valorAct.config(text=sum(valorAct))
+        self.valorAct.config(text=sum(valorAct))
 
             
 
@@ -293,25 +309,32 @@ class Resumen(ttk.Frame):
         tabla.grid(row=4,column=0, columnspan=2)
         tabla.heading("#0", text="Cripto", anchor=CENTER)
         tabla.heading("#1", text="Valor", anchor=CENTER)
-    
-        conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
-        c = conn.cursor()
 
-        c.execute( "SELECT CurrencyT , CurrencyQ from MOVEMENTS ;")
-        criptoSaldo = c.fetchall()
-        dictCripto={}
-        for elements in criptoSaldo:
-            if elements[0] in dictCripto:
-                dictCripto[elements[0]] += elements[1]
-            else:
-                dictCripto[elements[0]] = elements[1]
+        try:
+            conn = sqlite3.connect(DBFILE)
+            c = conn.cursor()
 
-            #print(dictCripto)
-      
-        conn.commit()
-        conn.close()  
+            c.execute( "SELECT CurrencyT , CurrencyQ from MOVEMENTS ;")
+            criptoSaldo = c.fetchall()
+            dictCripto={}
+            for elements in criptoSaldo:
+                if elements[0] in dictCripto:
+                    dictCripto[elements[0]] += elements[1]
+                else:
+                    dictCripto[elements[0]] = elements[1]
+
+            if 'EUR' in dictCripto:
+                del dictCripto['EUR']
         
-        for k, v in criptoSaldo:
+            conn.commit()
+            conn.close()  
+        except Exception as e:
+            print( "se ha producido un error en status: {}".format(e))
+            self.config(messagebox.showerror(message="error acceso base de datos", title=" ERROR BD"))
+  
+
+            
+        for k, v in dictCripto.items():
             tabla.insert('',0,text=k, values=v)
 
 

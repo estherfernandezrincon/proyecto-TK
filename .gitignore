@@ -3,5 +3,6 @@ imagenes/
 config
 __pycache__
 .vscode
+config.ini
 
 

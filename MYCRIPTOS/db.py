@@ -1,20 +1,25 @@
 import sqlite3
 from datetime import datetime
 from sqlite3 import Error
+from MYCRIPTOS.entidades import *
+from MYCRIPTOS.entidades import config
+
+#DBFILE= config ['DBFILE']
 
 
+'''
 def sql_connection():
-        try:
-            conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
-            return conn
+    try:
+        conn = sqlite3.connect(config['DBFILE'])
+        return conn
 
-        except Error:
-            print(Error)
-
+    except Error:
+        print(Error)
+'''
 
 def Comprar(CurrencyF, Qf,CurrencyT,CurrencyP):
-    #try:
-    conn = sqlite3.connect("MYCRIPTOS/data/base_de_datos.db")
+
+    conn = sqlite3.connect(DBFILE)
     c = conn.cursor()
 
     now=datetime.now()  
@@ -25,14 +30,11 @@ def Comprar(CurrencyF, Qf,CurrencyT,CurrencyP):
         ( str(nowD), str(nowT), CurrencyF, Qf ,CurrencyT, CurrencyP
         ))
     
-        #messagebox.showinfo("correcto")
 
-    #except:
-        #messagebox.showwarning("problema conexion")
 
     conn.commit()
     conn.close()
-sql_connection()
+#sql_connection()
 
 
 
