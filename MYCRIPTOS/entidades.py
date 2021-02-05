@@ -7,13 +7,14 @@ import requests
 from datetime import datetime
 from configparser import ConfigParser
 
+from MYCRIPTOS.db import *
+from MYCRIPTOS.tools import *
 
 
 
 
-c= ConfigParser()
-c.read('MYCRIPTOS/config.ini')
-config = c ['DEFAULT']
+
+
 
 DBFILE= config ['DBFILE']
 APIkey= config ['APIkey']
@@ -22,16 +23,13 @@ class Movimientos(ttk.Frame):
 
     def __init__(self, parent):
         ttk.Frame.__init__(self, parent)   
-        
     
         movimientos = ttk.Frame(self)
-        movimientos.pack(side=TOP)
-        
+        movimientos.pack(side=TOP)        
 
         cabecera= "Fecha       Hora      From       Q       TO       Q        P.U. "
         fontC= ("Helvetica", 11, "bold")
-        fontL= ("Helvetica", 11)
-        
+        fontL= ("Helvetica", 11)        
 
         btnReset = ttk.Button(movimientos, text="Reset").pack(side=RIGHT)
         lbl_ppal= ttk.Label(movimientos, font=fontC,text= cabecera ,width= 100, anchor=CENTER)
@@ -109,7 +107,7 @@ class Compras(ttk.Frame):
         self.CurrencyTo= StringVar()
         self.labelTo = ttk.Label(TO,  text="TO : ", width=7)
         self.labelTo.pack(side= LEFT,  padx= 10, pady= 10)
-        self.comboTo = ttk.Combobox(TO, values= values,textvariable= self.CurrencyTo , state="readonly")
+        self.comboTo = ttk.Combobox(TO, values=values, textvariable= self.CurrencyTo , state="readonly")
         self.comboTo.pack(side= LEFT)
 
         self.labelQ = ttk.Label(Q, text="Q:" ,width= 5).pack(side= LEFT,   padx= 10, pady= 10)
@@ -128,26 +126,63 @@ class Compras(ttk.Frame):
         v4.pack(side=LEFT, padx= 120)
         
         btnA =ttk.Button(v4,text="Aceptar",command = self.Comprar).pack(side= TOP , pady=5)
-        btnCxl= ttk.Button(v4,text="Cancelar", state= "DISABLED",command=self.cancelar).pack(side= TOP,pady= 5)
+        btnCxl= ttk.Button(v4,text="Cancelar",command=self.cancelar).pack(side= TOP,pady= 5)
         btnC=ttk.Button(v4,text="Consulta Api",command= self.peticion).pack(side= TOP , pady=5)
 
     def cancelar(self):
-        if self.CurrencyFrom != "" :
-            btnCxl['state'] = NORMAL
-            
+        CurrencyF = self.CurrencyFrom.get() 
+        Qf = float(self.QFrom.get())
+        CurrencyT = self.CurrencyTo.get()
+        CurrencyP = self.QTo.get()
+        PU= Qf / CurrencyP
+
+        if CurrencyF != "" :
+            self.CurrencyFrom.set("")  
+            self.entryQFrom.config(state='normal')
+        else:
+            CurrencyF = self.CurrencyFrom.get()
+
+        if Qf != 0:
+            self.QFrom.set(0.0)
+        else:
+            Qf = float(self.QFrom.get())
         
-    def entrada_permitida(self,S,P,s):
+        if CurrencyT != "":
+            self.CurrencyTo.set("")
+        else:
+            CurrencyT = self.CurrencyTo.get()
+
+        if CurrencyP != "":
+            self.QTo.set("")
+        else:
+            CurrencyP = self.QTo.get()          
         
-        print("S: ",S, "s: ",s, "P: ",P)
+        if PU != 0:
+            self.PUnd.set(0.0)
+        else:
+            PU= Qf / CurrencyP
+        
+    def entrada_permitida(self):
+        if len(self.QFrom) > 8:
+            self.QFrom.set(self.QFrom.get()[:8])
+        else:
+            self.QFrom.get()
 
 
     def peticion(self):
+        valor = 8
+        if self.entryQFrom != 0:
+            self.entryQFrom.config(state='disabled')
+        else:
+            self.entryQFrom.config(state='normal')
+
         try:
             CurrencyF = self.CurrencyFrom.get() 
             Qf = float(self.QFrom.get())
-            CurrencyT = self.CurrencyTo.get()            
+            CurrencyT = self.CurrencyTo.get()
+            
         
-            CurrencyPurchase = peticion(CurrencyF, Qf, CurrencyT)
+            CurrencyPurchase = peticion(CurrencyF, Qf, CurrencyT)       
             print(CurrencyPurchase)
         except Exception as e:
             print("error en api: {}".format(e))
@@ -157,19 +192,43 @@ class Compras(ttk.Frame):
         self.QTo.set(CurrencyPurchase)
         PU= round(float(Qf / CurrencyPurchase), 2)
         self.PUnd.set(PU)
-        
-      
+              
 
     def Comprar(self):
-        
+                
         CurrencyF = self.CurrencyFrom.get() 
         Qf = float(self.QFrom.get())
         CurrencyT = self.CurrencyTo.get()
         CurrencyP = self.QTo.get()
+        PU= Qf / CurrencyP
+ 
+        if CurrencyF != "" :
+            self.CurrencyFrom.set("")  
+        else:
+            CurrencyF = self.CurrencyFrom.get()
+
+        if Qf != 0:
+            self.QFrom.set(0.0)
+        else:
+            Qf = float(self.QFrom.get())
         
+        if CurrencyT != "":
+            self.CurrencyTo.set("")
+        else:
+            CurrencyT = self.CurrencyTo.get()
+
+        if CurrencyP != "":
+            self.QTo.set("")
+        else:
+            CurrencyP = self.QTo.get() 
+
+        if PU != 0:
+            self.PUnd.set(0.0)
+        else:
+            PU= Qf / CurrencyP
+
         
-        comprar= Comprar(CurrencyF, Qf,CurrencyT,CurrencyP)
-       
+        comprar= Comprar(CurrencyF, Qf,CurrencyT,CurrencyP)       
 
     def AñadeMoneda(self):
         try:
@@ -255,7 +314,6 @@ class Resumen(ttk.Frame):
         except Exception as e :
             print( "se ha producido un error en status: {}".format(e))
             self.config(messagebox.showerror(message="error acceso base de datos", title=" ERROR BD"))
-
       
         l=[]
         m=[]

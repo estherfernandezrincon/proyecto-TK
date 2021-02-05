@@ -2,9 +2,9 @@ import sqlite3
 from datetime import datetime
 from sqlite3 import Error
 from MYCRIPTOS.entidades import *
-from MYCRIPTOS.entidades import config
+from MYCRIPTOS.tools import config
 
-#DBFILE= config ['DBFILE']
+DBFILE= config ['DBFILE']
 
 
 '''
