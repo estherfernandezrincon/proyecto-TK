@@ -7,18 +7,10 @@ from MYCRIPTOS.tools import config
 DBFILE= config ['DBFILE']
 
 
-'''
-def sql_connection():
-    try:
-        conn = sqlite3.connect(config['DBFILE'])
-        return conn
 
-    except Error:
-        print(Error)
-'''
 
-def Comprar(CurrencyF, Qf,CurrencyT,CurrencyP):
 
+def Comprar(CurrencyF, Qf,CurrencyT,CurrencyP,PU):
     conn = sqlite3.connect(DBFILE)
     c = conn.cursor()
 
@@ -26,15 +18,15 @@ def Comprar(CurrencyF, Qf,CurrencyT,CurrencyP):
     nowD=now.date()   
     nowT=now.time()
 
-    c.execute('INSERT INTO MOVEMENTS ( Date, Time, MoneyF, MoneyQ, CurrencyT, CurrencyQ ) VALUES (?,?,?,?,?,?);', 
-        ( str(nowD), str(nowT), CurrencyF, Qf ,CurrencyT, CurrencyP
+    c.execute('INSERT INTO MOVEMENTS ( Date, Time, MoneyF, MoneyQ, CurrencyT, CurrencyQ ,P ) VALUES (?,?,?,?,?,?,?);', 
+        ( str(nowD), str(nowT), CurrencyF, Qf ,CurrencyT, CurrencyP ,PU 
         ))
     
 
 
     conn.commit()
     conn.close()
-#sql_connection()
+
 
 
 

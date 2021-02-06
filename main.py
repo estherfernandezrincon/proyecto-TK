@@ -21,12 +21,6 @@ class Cripto(Tk):
         self.resumen = entidades.Resumen(self)
         self.resumen.pack(side=TOP)
 
-
-  
-    
-
-
-
 if __name__ == "__main__":
     app = Cripto()
     app.mainloop()

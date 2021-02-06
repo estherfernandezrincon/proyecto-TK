@@ -7,13 +7,9 @@ import requests
 from datetime import datetime
 from configparser import ConfigParser
 
+
 from MYCRIPTOS.db import *
 from MYCRIPTOS.tools import *
-
-
-
-
-
 
 
 DBFILE= config ['DBFILE']
@@ -27,11 +23,10 @@ class Movimientos(ttk.Frame):
         movimientos = ttk.Frame(self)
         movimientos.pack(side=TOP)        
 
-        cabecera= "Fecha       Hora      From       Q       TO       Q        P.U. "
+        cabecera= "Fecha         Hora           From           Q           TO          Q           P.U. "
         fontC= ("Helvetica", 11, "bold")
         fontL= ("Helvetica", 11)        
-
-        btnReset = ttk.Button(movimientos, text="Reset").pack(side=RIGHT)
+        btnReset = ttk.Button(movimientos, text="Reset", command=self.reset).pack(side=RIGHT)
         lbl_ppal= ttk.Label(movimientos, font=fontC,text= cabecera ,width= 100, anchor=CENTER)
         lbl_ppal.pack(side=TOP)
 
@@ -41,28 +36,30 @@ class Movimientos(ttk.Frame):
         scroll= Scrollbar(movimientos, orient= VERTICAL)
         scroll.pack(side= RIGHT, fill=Y)
 
-        myList= Listbox(movimientos, yscrollcommand= scroll.set, bd=0, font=fontL)
-        myList.pack(side=LEFT,fill=BOTH, expand=True)
-      
+        self.myList= Listbox(movimientos, yscrollcommand= scroll.set, bd=0, font=fontL, justify= CENTER)
+        self.myList.pack(side=LEFT,fill=BOTH, expand=True)
 
-        scroll.config(command=myList.yview)
+        scroll.config(command=self.myList.yview)
+
+    def reset(self):
+
 
         try:
             conn = sqlite3.connect(DBFILE)
             c = conn.cursor()
-            c.execute('SELECT   Date, Time, MoneyF, MoneyQ , CurrencyT, CurrencyQ from MOVEMENTS ;')
+            c.execute('SELECT   Date, Time, MoneyF, MoneyQ , CurrencyT, CurrencyQ , P from MOVEMENTS ;')
 
             resultado= c.fetchall()
+           
             conn.commit()
             conn.close()
         except Exception as e:
             print( "se ha producido un error en status: {}".format(e))
             self.config(messagebox.showerror(message="error acceso base de datos", title=" ERROR BD"))            
 
-        for i in resultado:
-            myList.insert(END, i)
-           
-
+        for i in  resultado:
+          
+            self.myList.insert(END, i)
 
 class Compras(ttk.Frame):
     def __init__(self, parent):
@@ -73,7 +70,6 @@ class Compras(ttk.Frame):
         FROM= ttk.Frame(compras)
         FROM.pack(side=LEFT, pady= 5)
         Q=ttk.Frame(FROM)
-        vcmd= Q.register(self.entrada_permitida) 
         Q.pack(side=BOTTOM, pady= 5)
         nuevasMonedas= self.AñadeMoneda()
 
@@ -91,8 +87,8 @@ class Compras(ttk.Frame):
         self.labelQ = ttk.Label(Q, text="Q:" ,width= 4)
         self.labelQ.pack(side= LEFT, fill= X,  padx= 5, pady= 10)
         self.QFrom= DoubleVar()
-        self.entryQFrom = ttk.Entry(Q, textvariable=self.QFrom, width=23, validatecommand=(vcmd,'%S','%P','%s' ), validate="all")
-        self.entryQFrom.pack(side=LEFT, fill= X,  padx=5, pady=10)               
+        self.entryQFrom = ttk.Entry(Q, textvariable=self.QFrom, width=23)
+        self.entryQFrom.pack(side=LEFT, fill= X,  padx=5, pady=10)
 
         compras =ttk.Frame(self)
         compras.pack(side=LEFT)
@@ -142,7 +138,7 @@ class Compras(ttk.Frame):
         else:
             CurrencyF = self.CurrencyFrom.get()
 
-        if Qf != 0:
+        if Qf != 0 :
             self.QFrom.set(0.0)
         else:
             Qf = float(self.QFrom.get())
@@ -161,20 +157,8 @@ class Compras(ttk.Frame):
             self.PUnd.set(0.0)
         else:
             PU= Qf / CurrencyP
-        
-    def entrada_permitida(self):
-        if len(self.QFrom) > 8:
-            self.QFrom.set(self.QFrom.get()[:8])
-        else:
-            self.QFrom.get()
 
-
-    def peticion(self):
-        valor = 8
-        if self.entryQFrom != 0:
-            self.entryQFrom.config(state='disabled')
-        else:
-            self.entryQFrom.config(state='normal')
+    def peticion(self):  
 
         try:
             CurrencyF = self.CurrencyFrom.get() 
@@ -192,7 +176,6 @@ class Compras(ttk.Frame):
         self.QTo.set(CurrencyPurchase)
         PU= round(float(Qf / CurrencyPurchase), 2)
         self.PUnd.set(PU)
-              
 
     def Comprar(self):
                 
@@ -200,14 +183,15 @@ class Compras(ttk.Frame):
         Qf = float(self.QFrom.get())
         CurrencyT = self.CurrencyTo.get()
         CurrencyP = self.QTo.get()
-        PU= Qf / CurrencyP
- 
+        PU= Qf / CurrencyP     
+
         if CurrencyF != "" :
             self.CurrencyFrom.set("")  
+            self.entryQFrom.config(state='normal')
         else:
             CurrencyF = self.CurrencyFrom.get()
 
-        if Qf != 0:
+        if Qf != 0 :
             self.QFrom.set(0.0)
         else:
             Qf = float(self.QFrom.get())
@@ -226,9 +210,8 @@ class Compras(ttk.Frame):
             self.PUnd.set(0.0)
         else:
             PU= Qf / CurrencyP
-
         
-        comprar= Comprar(CurrencyF, Qf,CurrencyT,CurrencyP)       
+        comprar= Comprar(CurrencyF, Qf,CurrencyT,CurrencyP, PU)       
 
     def AñadeMoneda(self):
         try:
@@ -241,8 +224,7 @@ class Compras(ttk.Frame):
             conn.close()   
         except Exception as e:
             print( "se ha producido un error en status: {}".format(e))
-            self.config(messagebox.showerror(message="error acceso base de datos", title=" ERROR BD"))            
-    
+            self.config(messagebox.showerror(message="error acceso base de datos", title=" ERROR BD"))                
 
         l=["EUR",]
 
@@ -250,9 +232,6 @@ class Compras(ttk.Frame):
             if m[0] != ""  and  m[0] not in l:              
                 l.append(m[0])        
         return l
-
-       
-        
 
 
 class Resumen(ttk.Frame):
@@ -264,14 +243,10 @@ class Resumen(ttk.Frame):
         resumen.pack(side=BOTTOM)
         v5= ttk.Frame(resumen)
         v5.pack(side=BOTTOM, ipady= 10)
-
-
-
-       
+      
         ttk.Label(v5, text="€ invertidos:", width= 10).pack(side= LEFT, fill= BOTH, expand= True, padx= 5, pady= 5)       
         self.miEUR= ttk.Label(v5, width= 15, relief= "groove")
-        self.miEUR.pack(side=LEFT, padx=5, pady=5)
-        
+        self.miEUR.pack(side=LEFT, padx=5, pady=5)        
 
         ttk.Label(v5, text=" Valor actual:", width= 12).pack(side= LEFT, fill= BOTH, expand= True, padx= 5, pady= 5)       
         self.valorAct =ttk.Label(v5, width= 15, relief= "groove")
@@ -291,14 +266,14 @@ class Resumen(ttk.Frame):
 
             c.execute("SELECT MoneyF, MoneyQ FROM MOVEMENTS;")
             sumaFrom= c.fetchall()
-            dictFrom={}            
+            dictFrom={}                     
         
             for elements in sumaFrom:
                 if elements[0] in dictFrom:
                     dictFrom[elements[0]] += elements[1]
                 else:
                     dictFrom[elements[0]] = elements[1]
-            
+            print(dictFrom)   
             c.execute( "SELECT CurrencyT, CurrencyQ FROM MOVEMENTS;")
             sumaTo=c.fetchall() 
             dictTo={}
@@ -307,8 +282,7 @@ class Resumen(ttk.Frame):
                 if elements[0] in dictTo:
                     dictTo[elements[0]] += elements[1]
                 else:
-                    dictTo[elements[0]] = elements[1]
-    
+                    dictTo[elements[0]] = elements[1] 
             conn.commit()
             conn.close()
         except Exception as e :
@@ -327,13 +301,10 @@ class Resumen(ttk.Frame):
                         m.append(valorCripto)                   
                         
         d=dict(zip(l,m)) 
-
-        amount=[]
-        symbol=[]
-        a=[]        
+     
         if 'EUR' in d:
-            del d['EUR']       
-        
+            del d['EUR']     
+
         valorAct=[]
         for k,v in d.items():
             cripto= k
@@ -353,46 +324,86 @@ class Resumen(ttk.Frame):
 
         self.valorAct.config(text=sum(valorAct))
 
-            
-
     def saldo(self):
        
         saldo =Toplevel()
-        saldo.geometry("500x400")
+        saldo.geometry("400x450")
         saldo.title("Saldo Criptos")
         saldo.iconbitmap("imagenes/bolsa.ico")
         saldo.grab_set()
+        
 
-        tabla=ttk.Treeview(saldo,columns=2)
+        tabla=ttk.Treeview(saldo,columns=2,)
         tabla.grid(row=4,column=0, columnspan=2)
         tabla.heading("#0", text="Cripto", anchor=CENTER)
         tabla.heading("#1", text="Valor", anchor=CENTER)
+  
+   
+        
 
         try:
             conn = sqlite3.connect(DBFILE)
             c = conn.cursor()
-
-            c.execute( "SELECT CurrencyT , CurrencyQ from MOVEMENTS ;")
-            criptoSaldo = c.fetchall()
-            dictCripto={}
-            for elements in criptoSaldo:
-                if elements[0] in dictCripto:
-                    dictCripto[elements[0]] += elements[1]
-                else:
-                    dictCripto[elements[0]] = elements[1]
-
-            if 'EUR' in dictCripto:
-                del dictCripto['EUR']
+            c.execute("SELECT MoneyF, MoneyQ FROM MOVEMENTS;")
+            sumaFromSaldo= c.fetchall()
+            dictFromSaldo={}
         
+            for elements in sumaFromSaldo:
+                if elements[0] in dictFromSaldo:
+                    dictFromSaldo[elements[0]] += elements[1]
+                else:
+                    dictFromSaldo[elements[0]] = elements[1]
+           
+            c.execute( "SELECT CurrencyT , CurrencyQ from MOVEMENTS ;")
+            sumaToSaldo = c.fetchall()
+
+            dictToSaldo={}
+            for elements in sumaToSaldo:
+                if elements[0] in dictToSaldo:
+                    dictToSaldo[elements[0]] += elements[1]
+                else:
+                    dictToSaldo[elements[0]] = elements[1]
+            l=[]
+            m=[]
+ 
+            for monedas in dictFromSaldo:            
+                if monedas in dictToSaldo:
+                    l.append(monedas)
+                    if monedas in dictFromSaldo:
+                        if monedas in dictToSaldo:
+                            saldos=dictToSaldo[monedas]-dictFromSaldo[monedas]                       
+                            m.append(saldos)                  
+                            
+            d_saldos=dict(zip(l,m))  
+            if 'EUR' in d_saldos :
+                del d_saldos['EUR']  
+
+            n=[]
+            s=[]
+            for monedas in dictToSaldo:   
+                if monedas not in d_saldos:
+                    n.append(monedas)
+                    if monedas in dictToSaldo:
+                        if monedas not in d_saldos:
+                            c=dictToSaldo[monedas]
+                            s.append(c)
+            d_saldos_totales=dict(zip(n,s))
+            
+
+            if 'EUR' in d_saldos_totales :
+                del d_saldos_totales['EUR']
+          
+
+            d_saldos.update(d_saldos_totales)
+            print(d_saldos)
+
             conn.commit()
             conn.close()  
         except Exception as e:
             print( "se ha producido un error en status: {}".format(e))
             self.config(messagebox.showerror(message="error acceso base de datos", title=" ERROR BD"))
-  
-
             
-        for k, v in dictCripto.items():
+        for k, v in d_saldos.items():
             tabla.insert('',0,text=k, values=v)
 
 
