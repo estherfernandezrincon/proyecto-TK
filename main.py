@@ -21,6 +21,12 @@ class Cripto(Tk):
         self.resumen = entidades.Resumen(self)
         self.resumen.pack(side=TOP)
 
+    def habilitar(self):    
+        pass
+    
+
+        
+
 if __name__ == "__main__":
     app = Cripto()
     app.mainloop()

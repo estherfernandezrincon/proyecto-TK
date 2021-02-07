@@ -18,16 +18,17 @@ APIkey= config ['APIkey']
 class Movimientos(ttk.Frame):
 
     def __init__(self, parent):
-        ttk.Frame.__init__(self, parent)   
+        ttk.Frame.__init__(self, parent)  
+       
     
         movimientos = ttk.Frame(self)
         movimientos.pack(side=TOP)        
-
-        cabecera= "Fecha         Hora           From           Q           TO          Q           P.U. "
-        fontC= ("Helvetica", 11, "bold")
-        fontL= ("Helvetica", 11)        
-        btnReset = ttk.Button(movimientos, text="Reset", command=self.reset).pack(side=RIGHT)
-        lbl_ppal= ttk.Label(movimientos, font=fontC,text= cabecera ,width= 100, anchor=CENTER)
+        
+        cabecera= "Fecha                         Hora                      From                      Q                     TO                     Q                         P.U. "
+        fontC= ("Courier ", 11, "bold")
+        fontL= ("Courier", 11)        
+        self.btnReset = ttk.Button(movimientos, text="Reset", command=self.reset).pack(side=RIGHT)
+        lbl_ppal= ttk.Label(movimientos, font=fontC,text= cabecera ,width= 100, anchor=W)
         lbl_ppal.pack(side=TOP)
 
         separar=ttk.Separator(movimientos, orient=HORIZONTAL)
@@ -36,14 +37,14 @@ class Movimientos(ttk.Frame):
         scroll= Scrollbar(movimientos, orient= VERTICAL)
         scroll.pack(side= RIGHT, fill=Y)
 
-        self.myList= Listbox(movimientos, yscrollcommand= scroll.set, bd=0, font=fontL, justify= CENTER)
+        self.myList= Listbox(movimientos, yscrollcommand= scroll.set, bd=0,font=fontL)
         self.myList.pack(side=LEFT,fill=BOTH, expand=True)
-
+       
+       
         scroll.config(command=self.myList.yview)
 
     def reset(self):
-
-
+        
         try:
             conn = sqlite3.connect(DBFILE)
             c = conn.cursor()
@@ -56,10 +57,17 @@ class Movimientos(ttk.Frame):
         except Exception as e:
             print( "se ha producido un error en status: {}".format(e))
             self.config(messagebox.showerror(message="error acceso base de datos", title=" ERROR BD"))            
-
-        for i in  resultado:
-          
-            self.myList.insert(END, i)
+        R= "{}  {}   {}     {:7.2f}         {}      {:7.2f}      {:7.2f}"
+        p=[]
+        
+      
+        for i in resultado:            
+            self.myList.insert(END, R.format(i[0],i[1],i[2],i[3],i[4],i[5],i[6])) 
+            p.append(resultado)
+            if i not in p:
+                self.myList.insert(END, R.format(i[0],i[1],i[2],i[3],i[4],i[5],i[6])) 
+     
+  
 
 class Compras(ttk.Frame):
     def __init__(self, parent):
@@ -130,7 +138,7 @@ class Compras(ttk.Frame):
         Qf = float(self.QFrom.get())
         CurrencyT = self.CurrencyTo.get()
         CurrencyP = self.QTo.get()
-        PU= Qf / CurrencyP
+        PU=  Qf /CurrencyP 
 
         if CurrencyF != "" :
             self.CurrencyFrom.set("")  
@@ -156,7 +164,7 @@ class Compras(ttk.Frame):
         if PU != 0:
             self.PUnd.set(0.0)
         else:
-            PU= Qf / CurrencyP
+            PU=  Qf /CurrencyP 
 
     def peticion(self):  
 
@@ -164,17 +172,20 @@ class Compras(ttk.Frame):
             CurrencyF = self.CurrencyFrom.get() 
             Qf = float(self.QFrom.get())
             CurrencyT = self.CurrencyTo.get()
-            
-        
+       
             CurrencyPurchase = peticion(CurrencyF, Qf, CurrencyT)       
             print(CurrencyPurchase)
+            if Qf != 0 :
+                self.entryQFrom.config(state='disabled')
+            else:
+                Qf = float(self.QFrom.get())
         except Exception as e:
             print("error en api: {}".format(e))
             self.config(messagebox.showinfo(message="Se ha producido un error en la API, intentalo más tarde", title="API"))
             return 
 
         self.QTo.set(CurrencyPurchase)
-        PU= round(float(Qf / CurrencyPurchase), 2)
+        PU= round(float(Qf / CurrencyPurchase  ), 2)
         self.PUnd.set(PU)
 
     def Comprar(self):
@@ -183,7 +194,7 @@ class Compras(ttk.Frame):
         Qf = float(self.QFrom.get())
         CurrencyT = self.CurrencyTo.get()
         CurrencyP = self.QTo.get()
-        PU= Qf / CurrencyP     
+        PU=  Qf/ CurrencyP  
 
         if CurrencyF != "" :
             self.CurrencyFrom.set("")  
@@ -209,7 +220,7 @@ class Compras(ttk.Frame):
         if PU != 0:
             self.PUnd.set(0.0)
         else:
-            PU= Qf / CurrencyP
+            PU=  Qf/CurrencyP
         
         comprar= Comprar(CurrencyF, Qf,CurrencyT,CurrencyP, PU)       
 
@@ -316,6 +327,7 @@ class Resumen(ttk.Frame):
                 datos = respuesta.json() 
                 valor= round(datos["data"]["quote"]["EUR"]["price"], 2)
                 valorAct.append(valor)
+                print(valorAct)
       
         except Exception as e:
             print("error en api: {}".format(e))
