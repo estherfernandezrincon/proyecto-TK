@@ -17,7 +17,7 @@ APIkey= config ['APIkey']
 
 class Movimientos(ttk.Frame):
 
-    def __init__(self, parent):
+    def __init__(self, parent, funcion):
         ttk.Frame.__init__(self, parent)  
        
     
@@ -27,7 +27,7 @@ class Movimientos(ttk.Frame):
         cabecera= "Fecha                         Hora                      From                      Q                     TO                     Q                         P.U. "
         fontC= ("Courier ", 11, "bold")
         fontL= ("Courier", 11)        
-        self.btnReset = ttk.Button(movimientos, text="Reset", command=self.reset).pack(side=RIGHT)
+        self.btnReset = ttk.Button(movimientos, text="Reset", command=funcion).pack(side=RIGHT)
         lbl_ppal= ttk.Label(movimientos, font=fontC,text= cabecera ,width= 100, anchor=W)
         lbl_ppal.pack(side=TOP)
 
@@ -39,35 +39,9 @@ class Movimientos(ttk.Frame):
 
         self.myList= Listbox(movimientos, yscrollcommand= scroll.set, bd=0,font=fontL)
         self.myList.pack(side=LEFT,fill=BOTH, expand=True)
-       
-       
+              
         scroll.config(command=self.myList.yview)
-
-    def reset(self):
-        
-        try:
-            conn = sqlite3.connect(DBFILE)
-            c = conn.cursor()
-            c.execute('SELECT   Date, Time, MoneyF, MoneyQ , CurrencyT, CurrencyQ , P from MOVEMENTS ;')
-
-            resultado= c.fetchall()
-           
-            conn.commit()
-            conn.close()
-        except Exception as e:
-            print( "se ha producido un error en status: {}".format(e))
-            self.config(messagebox.showerror(message="error acceso base de datos", title=" ERROR BD"))            
-        R= "{}  {}   {}     {:7.2f}         {}      {:7.2f}      {:7.2f}"
-        p=[]
-        
-      
-        for i in resultado:            
-            self.myList.insert(END, R.format(i[0],i[1],i[2],i[3],i[4],i[5],i[6])) 
-            p.append(resultado)
-            if i not in p:
-                self.myList.insert(END, R.format(i[0],i[1],i[2],i[3],i[4],i[5],i[6])) 
-     
-  
+ 
 
 class Compras(ttk.Frame):
     def __init__(self, parent):
@@ -89,13 +63,13 @@ class Compras(ttk.Frame):
         self.lblFrom = ttk.Label(FROM, text="From: ",  width=5)
         self.lblFrom.pack(side= LEFT, fill= X, padx= 5, pady= 10)
         self.CurrencyFrom= StringVar()   
-        self.comboFrom = ttk.Combobox(FROM, values=nuevasMonedas, textvariable= self.CurrencyFrom, state="readonly")
+        self.comboFrom = ttk.Combobox(FROM, values=nuevasMonedas, textvariable= self.CurrencyFrom, state="disabled")
         self.comboFrom.pack(side= LEFT)
         
         self.labelQ = ttk.Label(Q, text="Q:" ,width= 4)
         self.labelQ.pack(side= LEFT, fill= X,  padx= 5, pady= 10)
         self.QFrom= DoubleVar()
-        self.entryQFrom = ttk.Entry(Q, textvariable=self.QFrom, width=23)
+        self.entryQFrom = ttk.Entry(Q, textvariable=self.QFrom, width=23, state="disabled")
         self.entryQFrom.pack(side=LEFT, fill= X,  padx=5, pady=10)
 
         compras =ttk.Frame(self)
@@ -111,7 +85,7 @@ class Compras(ttk.Frame):
         self.CurrencyTo= StringVar()
         self.labelTo = ttk.Label(TO,  text="TO : ", width=7)
         self.labelTo.pack(side= LEFT,  padx= 10, pady= 10)
-        self.comboTo = ttk.Combobox(TO, values=values, textvariable= self.CurrencyTo , state="readonly")
+        self.comboTo = ttk.Combobox(TO, values=values, textvariable= self.CurrencyTo , state="disabled")
         self.comboTo.pack(side= LEFT)
 
         self.labelQ = ttk.Label(Q, text="Q:" ,width= 5).pack(side= LEFT,   padx= 10, pady= 10)
@@ -188,8 +162,7 @@ class Compras(ttk.Frame):
         PU= round(float(Qf / CurrencyPurchase  ), 2)
         self.PUnd.set(PU)
 
-    def Comprar(self):
-                
+    def Comprar(self):                
         CurrencyF = self.CurrencyFrom.get() 
         Qf = float(self.QFrom.get())
         CurrencyT = self.CurrencyTo.get()
@@ -348,9 +321,7 @@ class Resumen(ttk.Frame):
         tabla=ttk.Treeview(saldo,columns=2,)
         tabla.grid(row=4,column=0, columnspan=2)
         tabla.heading("#0", text="Cripto", anchor=CENTER)
-        tabla.heading("#1", text="Valor", anchor=CENTER)
-  
-   
+        tabla.heading("#1", text="Valor", anchor=CENTER)   
         
 
         try:

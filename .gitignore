@@ -4,5 +4,6 @@ config
 __pycache__
 .vscode
 config.ini
+base_de_datos.db
 
 
