@@ -45,6 +45,8 @@ def Comprar(CurrencyF, Qf,CurrencyT,CurrencyP,PU):
     conn.commit()
     conn.close()
 
+
+
     
 
 def mostrar(myList):
@@ -60,8 +62,8 @@ def mostrar(myList):
     conn.close()
 
 
-    R= "{}  {}   {}     {:7.2f}         {}      {:7.2f}      {:7.2f}"
-    p=[]
+    R= "{}  {}   {}     {:7.2f}     {}    {:5.8f}      {:4.8f}"
+   
     for i in resultado:            
         myList.insert(END, R.format(i[0],i[1],i[2],i[3],i[4],i[5],i[6])) 
             
