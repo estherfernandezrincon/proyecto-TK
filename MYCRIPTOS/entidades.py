@@ -42,7 +42,7 @@ class Movimientos(ttk.Frame):
         scroll.config(command=self.myList.yview) 
 
 class Compras(ttk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, funcion_aceptar ):
         ttk.Frame.__init__(self, parent)
 
         compras =ttk.Frame(self)
@@ -51,8 +51,7 @@ class Compras(ttk.Frame):
         FROM.pack(side=LEFT, pady= 5)
         Q=ttk.Frame(FROM)
         Q.pack(side=BOTTOM, pady= 5)
-        nuevasMonedas= self.AñadeMoneda()
-        
+        nuevasMonedas = self.AñadeMoneda()  
 
         separar=ttk.Separator(FROM, orient=HORIZONTAL)
         separar.pack(side=TOP, fill=BOTH, expand=True, padx=5, pady=5)
@@ -102,7 +101,7 @@ class Compras(ttk.Frame):
         v4= ttk.Frame(compras)
         v4.pack(side=LEFT, padx= 120)
         
-        btnA =ttk.Button(v4,text="Aceptar",command = self.Comprar).pack(side= TOP , pady=5)
+        btnA =ttk.Button(v4,text="Aceptar",command = funcion_aceptar).pack(side= TOP , pady=5)
         btnCxl= ttk.Button(v4,text="Cancelar",command=self.cancelar).pack(side= TOP,pady= 5)
         btnC=ttk.Button(v4,text="Consulta Api",command= self.peticion).pack(side= TOP , pady=5)
 
@@ -162,41 +161,6 @@ class Compras(ttk.Frame):
         PU= round(float(Qf / CurrencyPurchase  ), 2)
         self.PUnd.set(PU)
 
-    def Comprar(self):                
-        CurrencyF = self.CurrencyFrom.get() 
-        Qf = float(self.QFrom.get())
-        CurrencyT = self.CurrencyTo.get()
-        CurrencyP = self.QTo.get()
-        PU=  Qf/ CurrencyP  
-
-        if CurrencyF != "" :
-            self.CurrencyFrom.set("")  
-            self.entryQFrom.config(state='normal')               
-        else:
-            CurrencyF = self.CurrencyFrom.get()
-
-        if Qf != 0 :
-            self.QFrom.set(0.0)
-        else:
-            Qf = float(self.QFrom.get())
-        
-        if CurrencyT != "":
-            self.CurrencyTo.set("")
-        else:
-            CurrencyT = self.CurrencyTo.get()
-
-        if CurrencyP != "":
-            self.QTo.set("")
-        else:
-            CurrencyP = self.QTo.get() 
-
-        if PU != 0:
-            self.PUnd.set(0.0)
-        else:
-            PU=  Qf/CurrencyP
-        
-        comprar= Comprar(CurrencyF, Qf,CurrencyT,CurrencyP, PU) 
-        self.comboFrom.config(values= self.AñadeMoneda())
 
     def AñadeMoneda(self):
         try:
@@ -212,26 +176,15 @@ class Compras(ttk.Frame):
 
             for m in monedasBD:
                 if m[0] != ""  and  m[0] not in l:              
-                    l.append(m[0]) 
-            #print (l)       
-            return l  
-         
-
+                    l.append(m[0])      
+            return l
 
         except Exception as e:
             print( "se ha producido un error en status: {}".format(e))
             self.config(messagebox.showerror(message="error acceso base de datos", title=" ERROR BD"))  
 
-
-
-
+        self.comboFrom.config(values=AñadeMoneda())
     
-                
-
-             
-
-  
-
 class Resumen(ttk.Frame):
 
     def __init__(self, parent):
@@ -262,8 +215,9 @@ class Resumen(ttk.Frame):
             miEUR= c.fetchall()  
             self.miEUR.config(text=miEUR) 
 
-            c.execute( "SELECT SUM(CurrencyQ) FROM MOVEMENTS WHERE CurrencyT ='EUR';")
+            c.execute( "SELECT coalesce (SUM(CurrencyQ),0) FROM MOVEMENTS WHERE CurrencyT ='EUR';")
             miEUR_To= c.fetchall()  
+            print(miEUR_To)
             
             l = miEUR + miEUR_To   
             misEuros, = l[0]         

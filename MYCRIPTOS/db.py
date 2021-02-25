@@ -45,9 +45,22 @@ def Comprar(CurrencyF, Qf,CurrencyT,CurrencyP,PU):
     conn.commit()
     conn.close()
 
+    conn = sqlite3.connect(DBFILE)
+    c = conn.cursor()
+
+    c.execute( "SELECT CurrencyT from MOVEMENTS ;")
+    monedasBD= c.fetchall()
+    conn.commit()
+    conn.close()
+
+    l=["EUR",]
+
+    for m in monedasBD:
+        if m[0] != ""  and  m[0] not in l:              
+            l.append(m[0])      
+    return l  
 
 
-    
 
 def mostrar(myList):
     myList.delete(0, END)
@@ -62,7 +75,7 @@ def mostrar(myList):
     conn.close()
 
 
-    R= "{}  {}   {}     {:7.2f}     {}    {:5.8f}      {:4.8f}"
+    R= "{}  {}   {}     {:7.2f}     {}    {:5.8f}      {:5.8f}"
    
     for i in resultado:            
         myList.insert(END, R.format(i[0],i[1],i[2],i[3],i[4],i[5],i[6])) 
