@@ -21,9 +21,10 @@ En él creamos dos variables, una con nuestra apikey y otra con nuestra ruta a b
 Ambas de deben escribir sin comillas ni espacios.
 Ver archivo config_template.ini como referencia.
 
+
 # MANEJO APLICACION
 
-Una vez abierta la aplicación, vemos en la parte central NUEVA TRANSACCIÓN.
+Una vez abierta la aplicación, clicamos en RESET para que se nos habilite la parte NUEVA TRANSACCIÓN y poder hacer nuestras compras.
 En el desplegable FROM, elegimos entre las monedas que tienen saldo, la primera vez solo tenemos EUR.
 En el entry Q, ponemos la cantidad que queremos invertir. 
 En el desplegable TO, elegimos la moneda que queremos comprar.
@@ -35,7 +36,7 @@ Si nuestra eleccion no nos es válida, pulsamos Cancelar y volemos a elegir nues
 Si pulsamos Aceptar, realizamos la compra de la criptomoneda y grabamos en nuestra base de datos.
 
 Para saber nuestros Euros invertidos y el valor Actual de las criptomonedas en Euros, pulsamos el boton Calcular.
-Para poder realizar compras de criptomonedas, inviendo criptomonedas, haremos primero la consulta de nuestro saldo de criptomonedas pulsando el boton Consultar Saldo.
+Para poder realizar compras de criptomonedas, invirtiendo criptomonedas, haremos primero la consulta de nuestro saldo de criptomonedas pulsando el boton Consultar Saldo.
 
 
 

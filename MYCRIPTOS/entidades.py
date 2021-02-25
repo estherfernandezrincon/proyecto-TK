@@ -286,7 +286,7 @@ class Resumen(ttk.Frame):
             del dd['EUR']
         
         d.update(dd)
-        print(d)
+        
 
         try:
             valor_consulta= 0
@@ -310,12 +310,9 @@ class Resumen(ttk.Frame):
     
         
         valorA =  misEuros, +(saldo_euros + valor_consulta ) 
-        #print( saldo_euros)
-        #print(valor_consulta)
-        #print(valorA)
-      
+        
         valorAct =  round(sum(valorA),2)
-        #print(valorAct)
+        
 
         self.valorAct.config(text=valorAct)
 
@@ -388,7 +385,7 @@ class Resumen(ttk.Frame):
           
 
             d_saldos.update(d_saldos_totales)
-            print(d_saldos)
+            
 
             conn.commit()
             conn.close()  
