@@ -217,7 +217,7 @@ class Resumen(ttk.Frame):
 
             c.execute( "SELECT coalesce (SUM(CurrencyQ),0) FROM MOVEMENTS WHERE CurrencyT ='EUR';")
             miEUR_To= c.fetchall()  
-            print(miEUR_To)
+            
             
             l = miEUR + miEUR_To   
             misEuros, = l[0]         

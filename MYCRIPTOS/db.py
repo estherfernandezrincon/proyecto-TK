@@ -70,7 +70,7 @@ def mostrar(myList):
     c.execute('SELECT   Date, Time, MoneyF, MoneyQ , CurrencyT, CurrencyQ , P from MOVEMENTS ;')
 
     resultado= c.fetchall()
-    #print (resultado)
+  
 
     conn.commit()
     conn.close()
