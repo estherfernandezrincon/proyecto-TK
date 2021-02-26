@@ -70,12 +70,13 @@ def mostrar(myList):
     c.execute('SELECT   Date, Time, MoneyF, MoneyQ , CurrencyT, CurrencyQ , P from MOVEMENTS ;')
 
     resultado= c.fetchall()
+    #print (resultado)
 
     conn.commit()
     conn.close()
 
-
-    R= "{}  {}   {}     {:7.2f}     {}    {:5.8f}      {:5.8f}"
+     
+    R= "{}  {}   {}   {:13.6f}  {}   {:13.8f}   {:13.8f}"
    
     for i in resultado:            
         myList.insert(END, R.format(i[0],i[1],i[2],i[3],i[4],i[5],i[6])) 

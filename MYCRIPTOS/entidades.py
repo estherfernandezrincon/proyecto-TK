@@ -23,7 +23,7 @@ class Movimientos(ttk.Frame):
         movimientos = ttk.Frame(self)
         movimientos.pack(side=TOP)        
         
-        cabecera= "Fecha                         Hora                      From                      Q              TO                     Q                         P.U. "
+        cabecera= "Fecha                         Hora                      From                Q                     TO                     Q                         P.U. "
         fontC= ("Courier ", 11, "bold")
         fontL= ("Courier", 11)        
         self.btnReset = ttk.Button(movimientos, text="Reset", command=funcion).pack(side=RIGHT)
